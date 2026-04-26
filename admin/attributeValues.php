@@ -231,9 +231,12 @@
                         <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
                         <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
 
-                        <button type="submit" name="delete" class="btn btn-danger btn-sm delete-btn" <?= $row['usage_count'] > 0 ? 'disabled' : '' ?>>
+                        <button type="submit" name="delete" class="btn btn-danger btn-sm delete-btn" <?= $row['usage_count'] > 0 ? 'disabled' : '' ?> data-confirm="Delete attribute's value?">
                             <i class='fa-solid fa-trash-can'></i>
                         </button>
+
+
+                        
                     </form>
                 </div>
             </div>

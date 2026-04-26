@@ -9,14 +9,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Google Fonts: Exo2 and Roboto -->
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="./css/style8.css">
-  <!-- Bootstrap 5 JS (Bundle with Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="./css/style8.css">
+    <!-- Bootstrap 5 JS (Bundle with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="./js/tinymce/tinymce.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="./js/tinymce/tinymce.min.js"></script>
+  <script src="./js/admin.js"></script>
 </head>
 <body>
 <!-- header.php -->
@@ -50,7 +51,7 @@
                 echo' <a class="nav-link" href="login.php"><i class="bi bi-person-fill"></i> Sign In</a>';
               }
               ?>
-            </li>
+          </li>
         </ul>
       </div>
     </div>

@@ -212,8 +212,8 @@ error_reporting(E_ALL);
                         <input type="hidden" name="id" value="<?= $row['id'] ?>">
 
                         <button name="delete"
-                                class="btn btn-danger btn-sm"
-                                <?= $row['usage_count'] > 0 ? 'disabled' : '' ?>>
+                                class="btn btn-danger btn-sm delete-btn"
+                                <?= $row['usage_count'] > 0 ? 'disabled' : '' ?> data-confirm="Delete brand?"> 
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </form>

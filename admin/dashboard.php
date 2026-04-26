@@ -121,8 +121,7 @@
               <div class='float-start col-md-1 text-center'><a href='editProduct.php?id=<?= $row['id'] ?>'><i class='fa-solid fa-pen-to-square'></i></a></div>
               <div class='float-start col-md-1'>
                 <button type="submit" name="delete" value="<?= $row['id'] ?>"
-                    class="btn btn-danger btn-sm"
-                    onclick="return confirm('Delete this product?')">
+                    class="btn btn-danger btn-sm" data-confirm="Delete product?">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
               </div>
