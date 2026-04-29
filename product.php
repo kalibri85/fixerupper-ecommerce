@@ -1,178 +1,199 @@
-<?php include('./includes/connection.php'); ?>
-<?php include('includes/header.php'); ?>
-
 <?php
-  if(!isset($_GET['id'])){
-    die("No id parametr in URL");
-  }
-  $message = '';
-  //Get Avarage rating and stars 
-  function rating($id, $conn) {
-    $summ = 0;
-    $counter = 0;
-    //Get all reviews for the Product
-    $sql = $conn->prepare("SELECT * FROM `reviews` WHERE `productID`= ?");
-        if(!$sql) die("Error prepare query".$conn->error);
-        $sql->bind_param("i", $id);
-        if(!$sql->execute()) die("Error rating".$sql->error);
-        //Inicialize variables to calculate avarage rating
-        $stars = '';
-        $starsBorder = '';
-        $result = $sql->get_result();
-        //Calculate number of reviews and total amount
-        while ($row = $result->fetch_assoc()) {
-          $summ+=$row['stars'];
-          $counter++;
-        }  
-        //Generate stars icons base on avarage rating
-        if ($counter === 0) {
-          //if no revies yet, display 5 empty stars
-          for($i = 0; $i <5; $i++) {
-            $stars .= '<i class="fa-regular fa-star"></i>';
-           }
-        } else {
-          $numberParts = explode('.', (string)$summ/$counter);
-          $beforePoint = (int)$numberParts[0];
-          // Display filled stars
-          for($i = 0; $i < $beforePoint; $i++) {
-            $stars .= '<i class="fa-solid fa-star pink"></i>';
-          }
-          // Display half star if avarage has number after the decimal point
-          if((int)$numberParts[1]) {
-            $stars .= '<i class="fa-solid fa-star-half-stroke"></i>';
-            $beforePoint ++;
-          }
-          //Fill remaining with empty stars
-          if($beforePoint < 5){
-            for($i = 0; $i <5-$beforePoint; $i++) {
-              $stars .= '<i class="fa-regular fa-star"></i>';
-            }
-          }
-        }
-        
-        
-        return $stars;
-  }
-  // Handle feedback submition and save review to database
-  if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["feedback"])){
-    $productID = intval($_POST['productID']);
-    $rating = intval($_POST['rating']);
-    $name = htmlspecialchars(trim($_POST['name']));
-    $comment = htmlspecialchars(trim($_POST['comment']));
-    $email = $_POST['email'];
-    $today = date("Y-m-d");
-    // Validate required fields
-    if(!$productID || !$rating || empty($name) || empty($email)){
-      echo "Please fill in all required fields.";
-    }
-    //Insert feedback to databse 
-    $sql = $conn->prepare("INSERT INTO `reviews` (`productID` , `stars`, `reviewDescrioption`, `name`, `email`, `date`) 
-    VALUES (?, ?, ?, ?, ?, ?)");
-    $sql->bind_param("iissss",
-                     $productID,
-                     $rating,
-                     $comment,
-                     $name,
-                     $email,
-                     $today
-                    );
-    // Show confirmation message                
-    if($sql->execute()) {
-        $message .= "<div class='alert alert-info'>Thank you for your feedback!</div>";
-    } else{
-        $message .= "<div class='alert alert-info'>Something went wrong. Please try again.</div>";
-    }
-  }
-  //Get current product ID
-  $productID = intval($_GET['id']);
-  //Generate stars base on avarage rating. Call the rating function
-  $stars = rating($productID, $conn);
-  //Show the feedback form
-  $form = $message.'
-  <form method="POST" action="">
-        <div class="mb-3">
-          <input type="hidden" name="productID" value="'.$productID.'">
-          <label for="rating" class="form-label">Rating: </label>
-          <select class="form-select" name="rating" id="rating" required>
-            <option value="">Select</option>
-            <option value="5">★★★★★</option>
-            <option value="4">★★★★☆</option>
-            <option value="3">★★★☆☆</option>
-            <option value="2">★★☆☆☆</option>
-            <option value="1">★☆☆☆☆</option>
-          </select>  
-        </div>
-        <div class="mb-3">
-          <label for="name" class="form-label">Name: </label>
-          <input name="name" class="form-control" required>
-          <label for="mail" class="form-label">Email: </label>
-          <input name="email" class="form-control" required>
-          <label for="comment" class="form-label">Comment: </label>
-          <textarea class="form-control" name="comment" id="comment" rows="3"></textarea>
-          <button type="submit" name="feedback" class="btn btn-primary btn-pink">Leave Feedback</button>
-        </div>  
-     </form>';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/admin/includes/init.php';
+include('./includes/header.php');
+
+$product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// PRODUCT
+$stmt = $conn->prepare("
+    SELECT p.*, b.name AS brand_name
+    FROM products p
+    LEFT JOIN brands b ON p.brandID = b.id
+    WHERE p.id = ? AND p.status = 1
+");
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$product = $stmt->get_result()->fetch_assoc();
+
+if (!$product) {
+    echo "Product not found";
+    exit;
+}
+
+// CATEGORY (Breadcrumbs)
+$cat = $conn->query("
+    SELECT c.*, parent.category AS parent_name, parent.id AS parent_id
+    FROM categories c
+    LEFT JOIN categories parent ON c.parent = parent.id
+    WHERE c.id = {$product['categoryID']}
+")->fetch_assoc();
+
+// ATTRIBUTES
+$attributes = $conn->query("
+    SELECT a.name, av.value
+    FROM attributes_product ap
+    JOIN attributes a ON ap.attributeID = a.id
+    JOIN attribute_values av ON ap.valueID = av.id
+    WHERE ap.productID = {$product['id']}
+");
 ?>
 
-<section id="product">
-   <?php 
-        //Get product detail by product ID
-        $sql = $conn->prepare("SELECT p.*, pt.typeName FROM `products` p LEFT JOIN productTypes pt ON p.productTypeID = pt.typeID WHERE `productID`= ?");
-        if(!$sql) die("Error prepare query".$conn->error);
-        $sql->bind_param("i", $productID);
-        if(!$sql->execute()) die("Error product query".$sql->error);
-        
-        $result = $sql->get_result();
-        if ($result->num_rows === 0) {
-        // Show message if the result is empty
-          echo "<div class='text-center'>No product found.</div>";
-        } else {
-          while ($row = $result->fetch_assoc()) {
-            $options = '';
-            //Show products oprions
-            $options .= ($row['sugar'] == 1) ? "<span class='options'>&#9679; <span class='optionTitle'>Sugar Free</span></span>" : "";
-            $options .= ($row['gluten'] == 1) ? "&nbsp; <span class='options'>&#9679; <span class='optionTitle'>Gluten Free</span></span>" : "";
-            $options .= ($row['lactose'] == 1) ? "&nbsp; <span class='options'>&#9679; <span class='optionTitle'>Lactose Free</span></span>" : "";
-          
-            echo '<div class="container p-2">
-                    <div class="row d-inline"> 
-                      <a href="index.php" class="text-decoration-none"><span class="homeLink">Home</span></a> 
-                      / <span class="colorDarkPurple">'.$row['typeName'].'</span>
-                    </div>
-                  </div>';
-            echo '<div class="container"> 
-                      <div class="row justify-content-center g-3">
-                          <div class="col-md-6 pe-3">
-                            <img src="./img/products/'.$row['image'].'" width="100%">
-                          </div>
-                          <div class="col-md-6 ps-3">
-                            <div class="row clearfix">
-                              <div class="col-md-8 float-start">
-                                <h2>'.$row['productName'].'</h2>
-                              </div>
-                              <div class="col-md-4 float-end text-end align-text-bottom">
-                                '.$stars.'
-                              </div>
-                            </div>  
-                            <div class="row">
-                              <div class="col-md-12">
-                                <span class="price">£'.$row['price'].'</span><span class="vat"> inc VAT</span>
-                                <div class="row mb-3"></div>
-                              </div>
-                            </div>  
-                            <div>'
-                            .$options.'</div><div class="row mb-3"></div><div>'
-                            .$row['productDescription'].'</div><div class="row mb-3"></div><div class="mb-2"><h3>Shere Your Experiance</h3>'
-                            .$form.
-                          '</div></div>
+<!-- BREADCRUMBS -->
+<section class="py-5">
+    <div class="container">
+        <nav class="breadcrumbs">
+            <a href="index.php">Home</a> /
 
+            <?php if (!empty($cat['parent_id'])): ?>
+                <a href="category.php?id=<?= $cat['parent_id'] ?>">
+                    <?= htmlspecialchars($cat['parent_name']) ?>
+                </a> /
+            <?php endif; ?>
 
-                      </div>   
-                  </div>';
-          }
-        }  
-    ?>
+            <a href="category.php?id=<?= $cat['id'] ?>">
+                <?= htmlspecialchars($cat['category']) ?>
+            </a> /
+
+            <span><?= htmlspecialchars($product['name']) ?></span>
+        </nav>
+    </div>
 </section>
 
+<!-- MAIN PRODUCT -->
+<section>
+    <div class="container">
+        <div class="row">
 
+            <!-- IMAGE -->
+            <div class="col-md-6">
+                <div class="product-image">
+                    <img src="img/products/<?= $product['image'] ?>" class="img-fluid w-100">
+                </div>
+            </div>
+
+            <!-- INFO -->
+            <div class="col-md-6">
+              <h1><?= htmlspecialchars($product['name']) ?></h1>
+              <div class="product-meta">
+                <?php if (!empty($product['brand_name'])): ?>
+                  <div class="product-brand">
+                      <?= htmlspecialchars($product['brand_name']) ?>
+                  </div>
+                <?php endif; ?>
+                <div class="rating">★★★★★</div>
+              </div>
+
+              <div class="price mb-3">£<?= number_format($product['price'], 2) ?></div>
+
+              <?php if ($product['qty_inventory'] > 0): ?>
+                <div class="text-success mb-3">In stock</div>
+              <?php else: ?>
+                <div class="text-danger mb-3">Out of stock</div>
+              <?php endif; ?>
+
+              <!-- QUANTITY -->
+              <div class="product-actions">
+            
+                <form method="POST" action="addToCart.php" class="add-to-cart-form product-actions">
+
+    <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
+    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+
+    <!-- QUANTITY -->
+    <div class="input-group quantity-group">
+        <button class="btn btn-outline-secondary qty-minus" type="button">−</button>
+
+        <input type="number"
+               name="qty"
+               class="form-control text-center qty-input"
+               value="1"
+               min="1"
+               max="<?= $product['qty_inventory'] ?>">
+
+        <button class="btn btn-outline-secondary qty-plus" type="button">+</button>
+    </div>
+
+    <!-- BUTTON -->
+    <button type="submit" class="btn-cta">
+        <i class="fa-solid fa-cart-shopping"></i> Add to cart
+    </button>
+
+</form>
+
+
+
+
+            </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- TABS -->
+<section class="pt-3 pb-5">
+    <div class="container">
+      <!-- TABS NAV -->
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <button class="nav-link active"
+                    data-bs-toggle="tab"
+                    data-bs-target="#desc">
+                Description
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#features">
+                Features
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#reviews">
+                Reviews
+            </button>
+        </li>
+      </ul>
+    <div class="tab-content p-3 border border-top-0">
+
+        <div class="tab-pane fade show active" id="desc">
+            <div class="product-description">
+                <?= $product['description'] ?>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="features">
+            <?php if ($attributes->num_rows > 0): ?>
+                <ul>
+                    <?php while ($a = $attributes->fetch_assoc()): ?>
+                        <li>
+                            <strong><?= htmlspecialchars($a['name']) ?>:</strong>
+                            <?= htmlspecialchars($a['value']) ?>
+                        </li>
+                    <?php endwhile; ?>
+                </ul>
+            <?php else: ?>
+                <p>No features available</p>
+            <?php endif; ?>
+        </div>
+
+        <div class="tab-pane fade" id="reviews">
+            <p>No reviews yet.</p>
+        </div>
+
+    </div>
+
+  </div>
+</section>
+<script src="./js/addToCart.js"></script>
+<script src="./js/product.js"></script>
 <?php include('includes/footer.php'); ?>

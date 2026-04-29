@@ -13,7 +13,7 @@
   <!-- Montserrat font -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="./css/style11.css">
+  <link rel="stylesheet" href="./css/style15.css">
   <!-- Bootstrap 5 JS (Bundle with Popper) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -21,11 +21,16 @@
 </head>
 <body>
   <!-- header.php -->
+  <?php
+    $cartCount = 0;
+
+    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        $cartCount = array_sum($_SESSION['cart']);
+    }
+  ?>
   <header>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
-
       <div class="container d-flex align-items-center justify-content-between">
-
         <!-- LEFT: LOGO -->
         <a class="navbar-brand" href="index.php">
           Fixer<span class="logo-accent">Upper</span>
@@ -37,9 +42,8 @@
           <!-- CART -->
           <a class="nav-link me-4 position-relative" href="cart.php">
             <i class="fa-solid fa-cart-shopping"></i> 
-            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle"> 0 </span>
+            <span id="cartCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle"> <?= $cartCount ?> </span>
           </a>
-
           <!-- AUTH -->
           <?php if (!isset($_SESSION['user'])): ?>
             <a class="nav-link text-center me-2" href="login.php">

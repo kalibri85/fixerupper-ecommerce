@@ -135,6 +135,7 @@ a {
 /* FIX HEADER OVERLAP */
 body {
   padding-top: var(--navbar-height);
+  margin: 0;
 }
 
 /* HERO */
@@ -207,14 +208,32 @@ body {
   margin-bottom: 20px;
   color: #191b32;
 }
-.category-hero{
-  border: 1px solid green;
+.category-hero {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+    line-height: 0;
 }
 .hero-img {
     width: 100%;
-    height: 250px;
+    height: 100%;
     object-fit: cover;
-    border: 1px solid red;
+    display: block;
+}
+.category-hero .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.category-hero h1, .category-hero p {
+    color: #ffffff;
+}
+.category-hero .overlay .container {
+    padding: 0 15px;
 }
 /* CATEGORY */
 .category-box {
