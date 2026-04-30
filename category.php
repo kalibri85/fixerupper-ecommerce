@@ -1,17 +1,17 @@
 <?php
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
+    /**
+    *
+    * @author Lana (Svetlana Muraveckaja-Odincova)
+    */
     require_once __DIR__ . '/admin/includes/init.php';
     include('./includes/header.php');
 
     $category_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
     $order = "ORDER BY p.id DESC";
-
+    // Sorting by price
     if (!empty($_GET['sort'])) {
-
         switch ($_GET['sort']) {
-
             case 'price_asc':
                 $order = "ORDER BY p.price ASC";
                 break;
@@ -33,15 +33,26 @@
         exit;
     }
 
-    // Get subcategories
-    $cat_ids = [$category_id];
+    // Get all subcategories
+    function getAllCategoryIds($conn, $parent_id) {
+        $ids = [$parent_id];
+        $sql = $conn->prepare("SELECT id FROM categories WHERE parent = ?");
+        $sql->bind_param("i", $parent_id);
+        $sql->execute();
+        $res = $sql->get_result();
 
-    $res = $conn->query("SELECT id FROM categories WHERE parent = $category_id");
-    while ($row = $res->fetch_assoc()) {
-        $cat_ids[] = $row['id'];
+        while ($row = $res->fetch_assoc()) {
+            $ids = array_merge(
+                $ids,
+                getAllCategoryIds($conn, (int)$row['id'])
+            );
+        }
+
+        return $ids;
     }
-
-    $cat_ids_str = implode(',', $cat_ids);
+    $cat_ids = getAllCategoryIds($conn, $category_id);
+    $cat_ids_str = implode(',', array_map('intval', $cat_ids));
+    
 
     // Filters
     $brands = $_GET['brand'] ?? [];
