@@ -16,7 +16,7 @@ if ($product_id <= 0 || $qty <= 0) {
 }
 
 $stmt = $conn->prepare("
-    SELECT id, qty_inventory
+    SELECT id, qty
     FROM products
     WHERE id = ? AND status = 1
 ");
@@ -29,8 +29,8 @@ if (!$product) {
     exit;
 }
 
-if ($qty > $product['qty_inventory']) {
-    $qty = $product['qty_inventory'];
+if ($qty > $product['qty']) {
+    $qty = $product['qty'];
 }
 
 if (!isset($_SESSION['cart'])) {
@@ -40,8 +40,8 @@ if (!isset($_SESSION['cart'])) {
 if (isset($_SESSION['cart'][$product_id])) {
     $_SESSION['cart'][$product_id] += $qty;
 
-    if ($_SESSION['cart'][$product_id] > $product['qty_inventory']) {
-        $_SESSION['cart'][$product_id] = $product['qty_inventory'];
+    if ($_SESSION['cart'][$product_id] > $product['qty']) {
+        $_SESSION['cart'][$product_id] = $product['qty'];
     }
 } else {
     $_SESSION['cart'][$product_id] = $qty;

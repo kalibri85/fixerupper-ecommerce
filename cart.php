@@ -11,7 +11,7 @@ if (!empty($cart)) {
     $ids = implode(',', array_map('intval', array_keys($cart)));
 
     $result = $conn->query("
-        SELECT id, name, price, image, qty_inventory
+        SELECT id, name, price, image, qty
         FROM products
         WHERE id IN ($ids) AND status = 1
     ");
@@ -76,7 +76,7 @@ if (!empty($cart)) {
                                            name="qty"
                                            value="<?= $qty ?>"
                                            min="1"
-                                           max="<?= $product['qty_inventory'] ?>"
+                                           max="<?= $product['qty'] ?>"
                                            class="form-control me-2">
 
                                     <button class="btn btn-outline-primary">
@@ -92,10 +92,14 @@ if (!empty($cart)) {
                             </div>
 
                             <div class="col-md-1 text-end">
-                                <a href="deleteCart.php?id=<?= $product['id'] ?>"
-                                   class="text-danger">
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>
+                                <form method="POST" action="deleteCart.php" class="d-inline remove-form">
+                                    <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
+                                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+
+                                    <button type="submit" class="btn btn-link text-danger p-0 border-0">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
 
                         </div>
@@ -137,5 +141,5 @@ if (!empty($cart)) {
 
     </div>
 </section>
-
+<script src="./js/cart.js"></script>
 <?php include('includes/footer.php'); ?>

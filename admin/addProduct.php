@@ -37,7 +37,7 @@
            $status = isset($_POST['publish']) ? 1 : 0;
            // Insert Product
            $sql = $conn->prepare("INSERT INTO products 
-                (`categoryID`, `brandID`, `sku`, `name`, `description`, `image`, `price`, `qty_inventory`, `status`) 
+                (`categoryID`, `brandID`, `sku`, `name`, `description`, `image`, `price`, `qty`, `status`) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
            $sql->bind_param("iissssdii", $category, $brand, $sku, $title, $desc, $photo, $price, $qty, $status);
            $sql->execute();

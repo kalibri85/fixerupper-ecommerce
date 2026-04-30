@@ -278,10 +278,13 @@
                                 <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
                                 <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
                                 <input type="hidden" name="qty" value="1">
-
-                                <button type="submit" class="btn-primary-custom mt-2">
-                                    <i class="fa-solid fa-cart-shopping"></i> Add to cart
-                                </button>
+                                    <?php if ($p['qty'] > 0): ?>
+                                        <button type="submit" class="btn-primary-custom mt-2">
+                                            <i class="fa-solid fa-cart-shopping"></i> Add to cart
+                                        </button>
+                                    <?php else: ?>
+                                        <div class="text-danger mb-2 pt-3">Out of stock</div>
+                                    <?php endif; ?>
                             </form>
                         </div>
                   </div>

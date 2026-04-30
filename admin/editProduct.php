@@ -87,7 +87,7 @@
                     description=?,
                     image=?,
                     price=?,
-                    qty_inventory=?,
+                    qty=?,
                     status=?
                 WHERE id=?
             ");
@@ -245,9 +245,9 @@
 
                     <!-- PRICING -->
                     <div class="tab-pane-custom d-none" id="pricing">
-                        <input type="number" step="0.01" min="0" class="form-control mb-2" name="price" placeholder="Price" value="<?= $product['price'] ?>">
-                        <input type="text" class="form-control mb-2" name="sku" placeholder="SKU" value="<?= $product['sku'] ?>">
-                        <input type="number" step="1" min="0" class="form-control mb-2" name="qty" placeholder="Quantity" value="<?= $product['qty_inventory'] ?>">
+                        <b>Price:</b> <input type="number" step="0.01" min="0" class="form-control mb-2" name="price" placeholder="Price" value="<?= $product['price'] ?>">
+                        <b>SKU:</b> <input type="text" class="form-control mb-2" name="sku" placeholder="SKU" value="<?= $product['sku'] ?>">
+                        <b>Quantity:</b> <input type="number" step="1" min="0" class="form-control mb-2" name="qty" placeholder="Quantity" value="<?= $product['qty'] ?>">
                     </div>
 
                     <!-- ATTRIBUTES -->

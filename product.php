@@ -88,7 +88,7 @@ $attributes = $conn->query("
 
               <div class="price mb-3">£<?= number_format($product['price'], 2) ?></div>
 
-              <?php if ($product['qty_inventory'] > 0): ?>
+              <?php if ($product['qty'] > 0): ?>
                 <div class="text-success mb-3">In stock</div>
               <?php else: ?>
                 <div class="text-danger mb-3">Out of stock</div>
@@ -111,7 +111,7 @@ $attributes = $conn->query("
                class="form-control text-center qty-input"
                value="1"
                min="1"
-               max="<?= $product['qty_inventory'] ?>">
+               max="<?= $product['qty'] ?>">
 
         <button class="btn btn-outline-secondary qty-plus" type="button">+</button>
     </div>
