@@ -28,6 +28,8 @@
             $category = $_POST['category'] != '' ? (int)$_POST['category'] : null;
             $brand = $_POST['brand'] != '' ? (int)$_POST['brand'] : null;
             $desc = trim($_POST['description']);
+            $allowed_tags = '<p><br><strong><em><ul><ol><li><h2><h3><h4><a><blockquote><img><table><thead><tbody><tr><td><th>';
+            $desc = strip_tags($desc, $allowed_tags);
             $price = $_POST['price'] !== '' ? (float)$_POST['price'] : 0;
             $sku= trim($_POST['sku']);
             $qty= $_POST['qty'] !== '' ? (int)$_POST['qty'] : 0;
