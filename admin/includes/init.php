@@ -22,7 +22,7 @@
     // ================= SESSION =================
     session_set_cookie_params([
         'httponly' => true,      // JS can't access cookie
-        'secure' => false,      // true when HTTPS
+        'secure' => true,      // true when HTTPS
         'samesite' => 'Strict' // Mitigate CSRF
     ]);
 
