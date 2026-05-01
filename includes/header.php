@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FixerUpper</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -14,10 +15,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
   <!-- Main CSS -->
   <link rel="stylesheet" href="./css/style15.css">
-  <!-- Bootstrap 5 JS (Bundle with Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </head>
 <body>
   <!-- header.php -->
@@ -107,7 +104,7 @@
                         </h6>
 
                         <?php
-                        $subs = $conn->query("SELECT * FROM categories WHERE parent = ".$cat['id']);
+                        $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
                         while ($sub = $subs->fetch_assoc()):
                         ?>
                           <a class="dropdown-item"
@@ -151,7 +148,7 @@
                         <div class="row">
 
                           <?php
-                          $subs = $conn->query("SELECT * FROM categories WHERE parent = ".$cat['id']);
+                          $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
                           while ($sub = $subs->fetch_assoc()):
                           ?>
                             <div class="col-md-4">
@@ -162,7 +159,7 @@
                               </a>
 
                               <?php
-                              $subsubs = $conn->query("SELECT * FROM categories WHERE parent = ".$sub['id']);
+                              $subsubs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$sub['id']);
                               while ($ss = $subsubs->fetch_assoc()):
                               ?>
                                 <a class="dropdown-item sub-item"
@@ -225,7 +222,7 @@
               </a>
 
               <?php
-              $subs = $conn->query("SELECT * FROM categories WHERE parent = ".$cat['id']);
+              $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
               while ($sub = $subs->fetch_assoc()):
               ?>
                 <a href="category.php?id=<?= $sub['id'] ?>" class="mobile-sub">
