@@ -5,7 +5,9 @@
  */
     require_once __DIR__ . '/includes/init.php';
 
-    //requireAdmin();
+    if (isAdmin()) {
+        redirect('dashboard.php');
+    }
 
     include('./includes/header.php');
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["username"]) && isset($_POST["password"])) {
@@ -26,16 +28,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["username"]) && isset($
         } else {
             $error = "Invalid username or password";
         }
-}
+    } else {
+        $error = "Invalid username or password";
+    }
 }
 ?>
-<div id="loginForm" class="container"> <!-- Or container-lg, container-md -->
+<div id="loginForm" class="container"> 
     <div class="row d-flex g-2 align-items-center">
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
             <input type="text" name="username" placeholder="Username">
             <input type="password" name="password" placeholder="Password">
             <button type="submit">Login</button>
         </form>
     </div>    
-    <?php if (isset($error)) echo $error; ?>
+    <?php if (isset($error)) echo htmlspecialchars($error); ?>
 </div>

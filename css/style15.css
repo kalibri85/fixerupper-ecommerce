@@ -260,14 +260,6 @@ a {
   color: var(--color-dark);
 }
 
-.product-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end; /* ВСЁ вправо */
-  gap: 15px;
-  margin-top: 20px;
-}
-
 /* BUTTONS */
 .btn-primary-custom {
   background: var(--color-accent);

@@ -1,44 +1,60 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+   /**
+    *
+    * @author Lana (Svetlana Muraveckaja-Odincova)
+    */
+    require_once __DIR__ . '/admin/includes/init.php';
+    include('./includes/header.php');
 
-require_once __DIR__ . '/admin/includes/init.php';
-include('./includes/header.php');
+    $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-$product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    // PRODUCT
+    $stmt = $conn->prepare("
+        SELECT p.*, b.name AS brand_name
+        FROM products p
+        LEFT JOIN brands b ON p.brandID = b.id
+        WHERE p.id = ? AND p.status = 1
+    ");
+    $stmt->bind_param("i", $product_id);
+    $stmt->execute();
+    $product = $stmt->get_result()->fetch_assoc();
 
-// PRODUCT
-$stmt = $conn->prepare("
-    SELECT p.*, b.name AS brand_name
-    FROM products p
-    LEFT JOIN brands b ON p.brandID = b.id
-    WHERE p.id = ? AND p.status = 1
-");
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$product = $stmt->get_result()->fetch_assoc();
+    if (!$product) {
+        echo "Product not found";
+        exit;
+    }
 
-if (!$product) {
-    echo "Product not found";
-    exit;
-}
+    // CATEGORY (Breadcrumbs)
+    $cat = $conn->query("
+        SELECT c.*, parent.category AS parent_name, parent.id AS parent_id
+        FROM categories c
+        LEFT JOIN categories parent ON c.parent = parent.id
+        WHERE c.id = {$product['categoryID']}
+    ")->fetch_assoc();
 
-// CATEGORY (Breadcrumbs)
-$cat = $conn->query("
-    SELECT c.*, parent.category AS parent_name, parent.id AS parent_id
-    FROM categories c
-    LEFT JOIN categories parent ON c.parent = parent.id
-    WHERE c.id = {$product['categoryID']}
-")->fetch_assoc();
+    // ATTRIBUTES
+    $attributes = $conn->query("
+        SELECT a.name, av.value
+        FROM attributes_product ap
+        JOIN attributes a ON ap.attributeID = a.id
+        JOIN attribute_values av ON ap.valueID = av.id
+        WHERE ap.productID = {$product['id']}
+    ");
+    // Variations
+    $variations = $conn->query("
+        SELECT pv.*, a.name AS attr_name, av.value AS attr_value
+        FROM product_variation pv
+        JOIN attributes a ON pv.attributeID = a.id
+        JOIN attribute_values av ON pv.valueID = av.id
+        WHERE pv.productID = {$product['id']}
+    ");
 
-// ATTRIBUTES
-$attributes = $conn->query("
-    SELECT a.name, av.value
-    FROM attributes_product ap
-    JOIN attributes a ON ap.attributeID = a.id
-    JOIN attribute_values av ON ap.valueID = av.id
-    WHERE ap.productID = {$product['id']}
-");
+    $variation_map = [];
+
+    while ($v = $variations->fetch_assoc()) {
+        $variation_map[$v['attr_name']][] = $v;
+    }
+
 ?>
 
 <!-- BREADCRUMBS -->
@@ -62,7 +78,7 @@ $attributes = $conn->query("
     </div>
 </section>
 
-<!-- MAIN PRODUCT -->
+<!-- PRODUCT -->
 <section>
     <div class="container">
         <div class="row">
@@ -93,43 +109,72 @@ $attributes = $conn->query("
               <?php else: ?>
                 <div class="text-danger mb-3">Out of stock</div>
               <?php endif; ?>
-
-              <!-- QUANTITY -->
-              <div class="product-actions">
             
-                <form method="POST" action="addToCart.php" class="add-to-cart-form product-actions">
+              <!-- QUANTITY -->
+              
+                <form method="POST" action="addToCart.php" class="add-to-cart-form">
 
-    <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
-    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                    <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
+                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
 
-    <!-- QUANTITY -->
-    <div class="input-group quantity-group">
-        <button class="btn btn-outline-secondary qty-minus" type="button">−</button>
+                    <div class="row">
+                        <!-- VARIATIONS -->
+                        <div class="col-md-12 ">
+                            <?php foreach ($variation_map as $attr => $values): ?>
+                                    <label class="form-label fw-bold">
+                                        <?= htmlspecialchars($attr) ?>
+                                    </label>
 
-        <input type="number"
-               name="qty"
-               class="form-control text-center qty-input"
-               value="1"
-               min="1"
-               max="<?= $product['qty'] ?>">
+                                    <select class="form-select variation-select"
+                                            name="variation[<?= $attr ?>]">
 
-        <button class="btn btn-outline-secondary qty-plus" type="button">+</button>
-    </div>
+                                        <option value="">Select</option>
 
-    <!-- BUTTON -->
-    <button type="submit" class="btn-cta">
-        <i class="fa-solid fa-cart-shopping"></i> Add to cart
-    </button>
+                                        <?php foreach ($values as $v): ?>
+                                            <option value="<?= $v['valueID'] ?>"
+                                                    data-price="<?= $v['priceOverride'] ?>">
+                                                <?= htmlspecialchars($v['attr_value']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
 
-</form>
+                                    </select>
+                            <?php endforeach; ?>
 
+                        </div>
+                    </div>
+                    <div class="row product-actions align-items-center mt-3 mb-2">
+    
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-3">
 
+                                <label for="qty" class="fw-bold mb-0">
+                                    Quantity:
+                                </label>
 
+                                <div class="input-group quantity-group">
+                                    <button type="button" class="btn btn-outline-secondary qty-minus">−</button>
 
-            </div>
+                                    <input type="number"
+                                        id="qty"
+                                        name="qty"
+                                        class="form-control text-center qty-input"
+                                        value="1"
+                                        min="1"
+                                        max="<?= $product['qty'] ?>">
 
-            </div>
+                                    <button type="button" class="btn btn-outline-secondary qty-plus">+</button>
+                                </div>
 
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 d-flex justify-content-end">
+                            <button type="submit" class="btn-cta">
+                                <i class="fa-solid fa-cart-shopping"></i> Add to cart
+                            </button>
+                        </div>
+                    </div>
+                </form>
         </div>
     </div>
 </section>
