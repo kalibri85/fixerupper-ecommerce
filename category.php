@@ -65,9 +65,8 @@
 
     // Brand filter
     if (!empty($brands)) {
-        $brands = array_map('intval', $brands);
-        $brands = implode(',', $brands);
-        $where .= " AND p.brandID IN ($brands)";
+        $filter_brands = implode(',', array_map('intval', $brands));
+        $where .= " AND p.brandID IN ($filter_brands)";
     }
 
     // Price filter
@@ -86,8 +85,7 @@
         foreach ($attrs as $attr_id => $values) {
 
             $attr_id = (int)$attr_id;
-            $values = array_map('intval', $values);
-            $values = implode(',', $values);
+            $values =  implode(',', array_map('intval', $values));
 
             $where .= "
                 AND EXISTS (
@@ -170,12 +168,12 @@
                     <input type="number" name="price_min"
                         class="form-control mb-2"
                         placeholder="Min" min="1"
-                        value="<?= $_GET['price_min'] ?? '' ?>">
+                        value="<?= htmlspecialchars($_GET['price_min'] ?? '', ENT_QUOTES)  ?>">
 
                     <input type="number" name="price_max"
                         class="form-control"
                         placeholder="Max" min="1"
-                        value="<?= $_GET['price_max'] ?? '' ?>">
+                        value="<?= htmlspecialchars($_GET['price_max'] ?? '', ENT_QUOTES) ?>">
                 </div>
 
                 <!-- BRANDS -->
@@ -188,6 +186,8 @@
                         FROM brands b
                         JOIN products p ON p.brandID = b.id
                         WHERE p.categoryID IN ($cat_ids_str)
+                        AND p.status = 1
+                        ORDER BY b.name
                     ");
 
                     while ($b = $brands->fetch_assoc()):
@@ -218,6 +218,7 @@
                         JOIN attributes_product ap ON ap.attributeID = a.id
                         JOIN products p ON p.id = ap.productID
                         WHERE p.categoryID IN ($cat_ids_str)
+                        AND p.status = 1
                     ");
 
                     while ($a = $attrs->fetch_assoc()):
@@ -233,6 +234,7 @@
                                 JOIN products p ON p.id = ap.productID
                                 WHERE ap.attributeID = {$a['id']}
                                 AND p.categoryID IN ($cat_ids_str)
+                                AND p.status = 1
                             ");
 
                             while ($v = $values->fetch_assoc()):
