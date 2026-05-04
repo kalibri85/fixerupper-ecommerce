@@ -118,11 +118,6 @@ if (!empty($cart)) {
                         <span>£<?= number_format($total, 2) ?></span>
                     </div>
 
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Delivery</span>
-                        <span>Free</span>
-                    </div>
-
                     <hr>
 
                     <div class="d-flex justify-content-between mb-3">
