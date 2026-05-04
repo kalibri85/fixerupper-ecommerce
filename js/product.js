@@ -3,22 +3,23 @@ document.querySelectorAll('.variation-select').forEach(select => {
 });
 
 function updatePrice() {
-    let basePrice = parseFloat(window.basePrice);
-
+    const priceEl = document.getElementById('productPrice');
+    const basePrice = parseFloat(priceEl.dataset.basePrice);
     let selectedPrice = basePrice;
 
     document.querySelectorAll('.variation-select').forEach(select => {
-        let option = select.selectedOptions[0];
+        const option = select.selectedOptions[0];
 
-        if (option && option.dataset.price) {
-            let override = parseFloat(option.dataset.price);
-            if (!isNaN(override)) {
+        // data-price is set only when variation has a price override
+        if (option && option.dataset.price !== '' && option.dataset.price !== undefined) {
+            const override = parseFloat(option.dataset.price);
+            if (!isNaN(override) && override > 0) {
                 selectedPrice = override;
             }
         }
     });
 
-    document.getElementById('productPrice').innerText =
+    document.getElementById('productPrice').textContent =
         selectedPrice.toFixed(2);
 }
 

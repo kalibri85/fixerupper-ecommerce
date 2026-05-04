@@ -102,7 +102,7 @@
                 <div class="rating">★★★★★</div>
               </div>
 
-              <div class="price mb-3">£<?= number_format($product['price'], 2) ?></div>
+              <div class="price mb-3">£<span id="productPrice" data-base-price="<?= (float)$product['price'] ?>"><?= number_format($product['price'], 2) ?></span></div>
 
               <?php if ($product['qty'] > 0): ?>
                 <div class="text-success mb-3">In stock</div>
@@ -132,7 +132,7 @@
 
                                         <?php foreach ($values as $v): ?>
                                             <option value="<?= $v['valueID'] ?>"
-                                                    data-price="<?= $v['priceOverride'] ?>">
+                                                    <?= $v['priceOverride'] !== null ? 'data-price="' . (float)$v['priceOverride'] . '"' : '' ?>>
                                                 <?= htmlspecialchars($v['attr_value']) ?>
                                             </option>
                                         <?php endforeach; ?>
