@@ -1,15 +1,11 @@
 <?php
-/**
- *  Admin — Delivery Methods
- *  @author Lana (Svetlana Muraveckaja-Odincova)
- */
 require_once __DIR__ . '/includes/init.php';
 requireAdmin();
 include('./includes/header.php');
 
 $message = '';
 
-// Add
+/* ADD */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
     checkCSRF();
 
@@ -27,21 +23,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
         $stmt->execute();
 
         redirect("deliveryMethods.php?success=1");
+        exit;
     }
 }
-// Save active
+
+/* SAVE ACTIVE */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_active'])) {
     checkCSRF();
 
     $ids = $_POST['active_ids'] ?? [];
     $ids = array_map('intval', $ids);
 
-    $in = '';
+    $conn->query("
+        UPDATE delivery_method
+        SET active = 0
+        WHERE active != 2
+    ");
 
     if (!empty($ids)) {
         $in = implode(',', $ids);
 
-        // set active = 1 for checked
         $conn->query("
             UPDATE delivery_method
             SET active = 1
@@ -50,23 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_active'])) {
         ");
     }
 
-    // set active = 0 for all not deleted
-    $conn->query("
-        UPDATE delivery_method
-        SET active = 0
-        WHERE active != 2
-        " . (!empty($in) ? "AND id NOT IN ($in)" : "")
-    );
-
     redirect("deliveryMethods.php?msg=updated");
+    exit;
 }
 
-// Update price
+/* UPDATE PRICE */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
     checkCSRF();
 
-    $id = (int)($_POST['id'] ?? 0);
-    $price = (float)($_POST['price'] ?? 0);
+    $id = (int)($_POST['update'] ?? 0);
+    $price = (float)($_POST['prices'][$id] ?? 0);
 
     if ($id > 0) {
         $stmt = $conn->prepare("
@@ -78,38 +72,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         $stmt->execute();
 
         redirect("deliveryMethods.php?msg=updated");
+        exit;
     }
 }
 
-// Delete
+/* DELETE */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
     checkCSRF();
 
-    $id = (int)($_POST['id'] ?? 0);
+    $id = (int)($_POST['delete'] ?? 0);
 
     if ($id > 0) {
-        $stmt = $conn->prepare("UPDATE delivery_method SET active = ? WHERE id = ?");
-        $active = 2;
-        $stmt->bind_param("ii", $active, $id);
+        $stmt = $conn->prepare("
+            UPDATE delivery_method
+            SET active = 2
+            WHERE id = ?
+        ");
+        $stmt->bind_param("i", $id);
         $stmt->execute();
+
         redirect("deliveryMethods.php?msg=deleted");
+        exit;
     }
 }
 
-// Get data
-$total = $conn->query("SELECT COUNT(*) as total FROM delivery_method")->fetch_assoc()['total'];
-
-$pagination = paginate($total, 10);
-$page = $pagination['page'];
-$totalPages = $pagination['totalPages'];
-$offset = $pagination['offset'];
-$perPage = $pagination['perPage'];
-
+/* GET DATA */
 $result = $conn->query("
     SELECT id, title, price, active
     FROM delivery_method
     WHERE active != 2
-    LIMIT $offset, $perPage
+    ORDER BY id DESC
 ");
 ?>
 
@@ -128,7 +120,6 @@ $result = $conn->query("
                 <?php
                 $msgs = [
                     'deleted' => 'Delivery method deleted.',
-                    'used' => 'Cannot delete: method is used in orders.',
                     'updated' => 'Delivery method updated.'
                 ];
                 echo $msgs[$_GET['msg']] ?? '';
@@ -185,6 +176,7 @@ $result = $conn->query("
 <!-- TABLE -->
 <section>
     <div class="container">
+
         <div class="row fw-bold border-bottom pb-2 mb-2 text-center">
             <div class="col-md-3">Name</div>
             <div class="col-md-2">Price</div>
@@ -193,14 +185,16 @@ $result = $conn->query("
             <div class="col-md-1">Edit</div>
             <div class="col-md-1">Delete</div>
         </div>
+
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
+
             <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="row align-items-center py-3 border-bottom text-center">
 
                     <!-- NAME -->
                     <div class="col-md-3">
-                        <?= htmlspecialchars($row['title']) ?><br>
+                        <?= htmlspecialchars($row['title']) ?>
                     </div>
 
                     <!-- PRICE -->
@@ -210,21 +204,20 @@ $result = $conn->query("
                             : 'Free' ?>
                     </div>
 
-                    <!-- EDIT FORM -->
+                    <!-- INLINE EDIT -->
                     <div class="col-md-4">
-                        <div  method='POST' id="edit-form-<?= $row['id'] ?>" class='mt-2 hidden'>
-                            <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
-                            <input type='hidden' name='id' value="<?= (int)$row['id'] ?>">
+                        <div id="edit-form-<?= $row['id'] ?>" class="mt-2 hidden">
                             <div class="d-flex gap-2 align-items-center">
                                 <input type="number"
-                                        name="price"
-                                        value="<?= $row['price'] ?>"
-                                        step="0.01"
-                                        min="0"
-                                        class="form-control form-control-sm">
+                                       name="prices[<?= $row['id'] ?>]"
+                                       value="<?= $row['price'] ?>"
+                                       step="0.01"
+                                       min="0"
+                                       class="form-control form-control-sm">
 
                                 <button type="submit"
                                         name="update"
+                                        value="<?= $row['id'] ?>"
                                         class="btn btn-success btn-sm">
                                     Save
                                 </button>
@@ -244,10 +237,10 @@ $result = $conn->query("
                                name="active_ids[]"
                                value="<?= $row['id'] ?>"
                                class="form-check-input"
-                               <?= $row['active'] ? 'checked' : '' ?>>
+                               <?= $row['active'] == 1 ? 'checked' : '' ?>>
                     </div>
 
-                    <!-- EDIT BUTTON -->
+                    <!-- EDIT BTN -->
                     <div class="col-md-1">
                         <button type="button"
                                 class="btn btn-link p-0 text-primary edit-btn"
@@ -258,9 +251,11 @@ $result = $conn->query("
 
                     <!-- DELETE -->
                     <div class="col-md-1">
-                        <button name="delete"
+                        <button type="submit"
+                                name="delete"
+                                value="<?= $row['id'] ?>"
                                 class="btn btn-danger btn-sm delete-btn"
-                                data-confirm="Delete delivery method?"> 
+                                data-confirm="Delete delivery method?">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -275,8 +270,6 @@ $result = $conn->query("
                 </button>
             </div>
         </form>
-
-        <?php renderPagination($totalPages, $page, 'deliveryMethods.php?'); ?>
     </div>
 </section>
 
