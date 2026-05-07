@@ -346,40 +346,4 @@ include('./includes/header.php');
     </div>
 </section>
 
-<script>
-// Bootstrap validation
-(function() {
-    'use strict';
-    document.querySelectorAll('.needs-validation').forEach(form => {
-        form.addEventListener('submit', e => {
-            if (!form.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
-    });
-
-    const pass    = document.getElementById('reg_password');
-    const confirm = document.getElementById('reg_confirm');
-
-    if (confirm) {
-        confirm.addEventListener('input', () => {
-            if (confirm.value !== pass.value) {
-                confirm.setCustomValidity('Passwords do not match.');
-            } else {
-                confirm.setCustomValidity('');
-            }
-        });
-        pass.addEventListener('input', () => {
-            if (confirm.value && confirm.value !== pass.value) {
-                confirm.setCustomValidity('Passwords do not match.');
-            } else {
-                confirm.setCustomValidity('');
-            }
-        });
-    }
-})();
-</script>
-
 <?php include('includes/footer.php'); ?>
