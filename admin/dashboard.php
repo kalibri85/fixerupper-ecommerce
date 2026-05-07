@@ -9,36 +9,6 @@
 
   include('./includes/header.php');
   error_reporting(E_ALL);
-
-  // Uptdate products table, set visible
-  if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark"])) {
-    if (!empty($_POST["available"])) {
-      foreach ($_POST["available"] as $id) {
-          $id = (int)$id;
-          $sql = $conn->prepare("UPDATE products SET status = 1 WHERE id = ? and status != 2");
-          $sql->bind_param("i", $id);
-          $sql->execute();
-      }
-    }
-    redirect("dashboard.php?msg=updated");
-    exit;
-  }
-  // Delete product from database after confirmation
-  if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete"])) {
-
-      $id = (int)($_POST["delete"]);
-
-      if ($id > 0) {
-        $sql = $conn->prepare("UPDATE products SET status = 2 WHERE id = ?");
-        $sql->bind_param("i", $id);
-        $sql->execute();
-        redirect("dashboard.php?msg=deleted");
-        exit;
-      } else {
-        redirect("dashboard.php?msg=invalid_id");
-        exit;
-      }
-  }
   // Paggination
   $resultTotal = $conn->query("SELECT COUNT(*) as total FROM products WHERE status != 2");
   $total = $resultTotal->fetch_assoc()['total'];
@@ -48,9 +18,76 @@
   $perPage = $pagination['perPage'];
   $offset = $pagination['offset'];
   $totalPages = $pagination['totalPages'];
+  
+  // Uptdate products table, set visible
+  if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark"])) {
+    checkCSRF();
+
+    // checked products
+    $checkedIds = $_POST['available'] ?? [];
+    $checkedIds = array_map('intval', $checkedIds);
+
+    // get ONLY products from current page again from DB
+    $pageProducts = $conn->query("
+        SELECT id
+        FROM products
+        WHERE status != 2
+        ORDER BY id DESC
+        LIMIT $offset, $perPage
+    ");
+
+    $pageIds = [];
+
+    while ($row = $pageProducts->fetch_assoc()) {
+        $pageIds[] = (int)$row['id'];
+    }
+
+    if (!empty($pageIds)) {
+        $pageIn = implode(',', $pageIds);
+
+        // reset only current page products
+        $conn->query("
+            UPDATE products
+            SET status = 0
+            WHERE id IN ($pageIn)
+            AND status != 2
+        ");
+
+        // set checked as active
+        if (!empty($checkedIds)) {
+            $checkedIn = implode(',', $checkedIds);
+
+            $conn->query("
+                UPDATE products
+                SET status = 1
+                WHERE id IN ($checkedIn)
+                AND status != 2
+            ");
+        }
+    }
+
+    redirect("dashboard.php?page=$page&msg=updated");
+    exit;
+  }
+  // Delete product from database after confirmation
+  if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete"])) {
+    checkCSRF();
+    $id = (int)($_POST["delete"]);
+
+    if ($id > 0) {
+      $sql = $conn->prepare("UPDATE products SET status = 2 WHERE id = ?");
+      $sql->bind_param("i", $id);
+      $sql->execute();
+      redirect("dashboard.php?page=$page&msg=deleted");
+      exit;
+    } else {
+      redirect("dashboard.php?page=$page&msg=invalid_id");
+      exit;
+    }
+  }
 
   // Get all products from database
-  $sql = "SELECT p.*, c.category AS category_name FROM products p LEFT JOIN categories c ON p.categoryID = c.id WHERE p.status != 2 LIMIT $offset, $perPage";
+  $sql = "SELECT p.*, c.category AS category_name FROM products p LEFT JOIN categories c ON p.categoryID = c.id WHERE p.status != 2 ORDER BY id DESC LIMIT $offset, $perPage";
   $result = $conn->query($sql);
 ?> 
 <section id="titleSection" class="pt-3 pb-1">
@@ -98,7 +135,7 @@
 <!-- Products list starts -->
 <section id="tableBody"> 
     <div class="container text-center">    
-        <form method="POST" action="dashboard.php">   
+        <form method="POST" action="dashboard.php?page=<?= $page ?>"> 
           <input type="hidden" name="csrf_token" id="csrf_token" value="<?= csrf() ?>">
           <?php
             while ($row = $result->fetch_assoc()) :
