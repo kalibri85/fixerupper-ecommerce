@@ -8,7 +8,7 @@
   requireAdmin();
 
   include('./includes/header.php');
-  error_reporting(E_ALL);
+ 
   // Paggination
   $resultTotal = $conn->query("SELECT COUNT(*) as total FROM products WHERE status != 2");
   $total = $resultTotal->fetch_assoc()['total'];
@@ -18,7 +18,7 @@
   $perPage = $pagination['perPage'];
   $offset = $pagination['offset'];
   $totalPages = $pagination['totalPages'];
-  
+
   // Uptdate products table, set visible
   if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark"])) {
     checkCSRF();

@@ -8,22 +8,63 @@
     requireAdmin();
 
     include('./includes/header.php');
-   
+
+    // Paggination
+    $resultTotal = $conn->query("SELECT COUNT(*) as total FROM categories");
+    $total = $resultTotal->fetch_assoc()['total'];
+    $pagination = paginate($total, 5);
+
+    $page = $pagination['page'];
+    $perPage = $pagination['perPage'];
+    $offset = $pagination['offset'];
+    $totalPages = $pagination['totalPages'];
+
     //Save selected categories as active
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark"])) {
         checkCSRF();
-        $activeIDs = isset($_POST["active"]) ? array_map('intval', $_POST['active']) : [];
 
-        $conn->query("UPDATE categories SET active = 0");
+        $activeIDs = isset($_POST["active"])
+            ? array_map('intval', $_POST['active'])
+            : [];
 
-        if(!empty($activeIDs)) {
-            $ids = implode(',', $activeIDs);
+        // get ids only from current page
+        $pageCategories = $conn->query("
+            SELECT id
+            FROM categories
+            ORDER BY id DESC
+            LIMIT $offset, $perPage
+        ");
 
-            $conn->query("UPDATE `categories` SET active = 1 WHERE `id` IN ($ids)");
+        $pageIds = [];
+
+        while ($row = $pageCategories->fetch_assoc()) {
+            $pageIds[] = (int)$row['id'];
+        }
+
+        if (!empty($pageIds)) {
+            $pageIn = implode(',', $pageIds);
+
+            // reset only current page
+            $conn->query("
+                UPDATE categories
+                SET active = 0
+                WHERE id IN ($pageIn)
+            ");
+
+            // set checked active
+            if (!empty($activeIDs)) {
+                $ids = implode(',', $activeIDs);
+
+                $conn->query("
+                    UPDATE categories
+                    SET active = 1
+                    WHERE id IN ($ids)
+                ");
+            }
         }
 
         redirect("categories.php?page=$page&updated=1");
-        exit;       
+        exit;
     }
     // Delete Category
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
@@ -88,20 +129,18 @@
             exit;
         }        
     }
-    // Paggination
-    $resultTotal = $conn->query("SELECT COUNT(*) as total FROM categories");
-    $total = $resultTotal->fetch_assoc()['total'];
-    $pagination = paginate($total, 5);
-
-    $page = $pagination['page'];
-    $perPage = $pagination['perPage'];
-    $offset = $pagination['offset'];
-    $totalPages = $pagination['totalPages'];
 
     // Get Data
-    $sql = "SELECT c.id, c.category, c.active, p.category AS parent_name, COUNT(prod.id) as product_count FROM categories c 
-            LEFT JOIN categories p ON c.parent = p.id LEFT JOIN products prod ON prod.categoryID = c.id GROUP BY c.id LIMIT $offset, $perPage";
-
+    $sql = "SELECT c.id, c.category, c.active,
+               p.category AS parent_name,
+               COUNT(prod.id) as product_count
+        FROM categories c
+        LEFT JOIN categories p ON c.parent = p.id
+        LEFT JOIN products prod ON prod.categoryID = c.id
+        GROUP BY c.id
+        ORDER BY c.id DESC
+        LIMIT $offset, $perPage";
+        
     $result = $conn->query($sql);
 ?>
 <section id="titleSection" class="pt-3 pb-1">
