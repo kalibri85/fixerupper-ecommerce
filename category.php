@@ -3,7 +3,7 @@
     *
     * @author Lana (Svetlana Muraveckaja-Odincova)
     */
-    require_once __DIR__ . '/admin/includes/init.php';
+    require_once __DIR__ . '/includes/init.php';
     include('./includes/header.php');
 
     $category_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

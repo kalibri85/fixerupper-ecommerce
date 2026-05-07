@@ -3,7 +3,7 @@
  * Checkout — customer must be logged in
  * @author Lana (Svetlana Muraveckaja-Odincova)
  */
-require_once __DIR__ . '/admin/includes/init.php';
+require_once __DIR__ . '/includes/init.php';
 
 $cart = $_SESSION['cart'] ?? [];
 if (empty($cart)) {

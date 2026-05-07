@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/admin/includes/init.php';
+require_once __DIR__ . '/includes/init.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
