@@ -35,30 +35,26 @@
 
         <!-- RIGHT TOP (ALWAYS VISIBLE) -->
         <div class="d-flex align-items-center order-lg-3">
-
           <!-- CART -->
           <a class="nav-link me-4 position-relative" href="cart.php">
             <i class="fa-solid fa-cart-shopping"></i> 
             <span id="cartCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle"> <?= $cartCount ?> </span>
           </a>
           <!-- AUTH -->
-          <?php if (!isset($_SESSION['user'])): ?>
-            <a class="nav-link text-center me-2" href="login.php">
+          <?php if (!isCustomer()): ?>
+            <a class="nav-link text-center me-2" href="auth.php">
               <i class="fa-solid fa-user"></i> <small>Login</small>
             </a>
           <?php else: ?>
             <div class="dropdown text-center me-3">
               <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                 <i class="fa-solid fa-user-circle"></i><br>
-                <small>Account</small>
+                <small><?= htmlspecialchars($_SESSION['customer_name']) ?></small>
               </a>
-
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="account.php">My Account</a></li>
-                <li><a class="dropdown-item" href="orders.php">Orders</a></li>
-                <li><a class="dropdown-item" href="addresses.php">Addresses</a></li>
+              <ul class="dropdown-menu align-items-center justify-content-between">
+                <li><a class="nav-link me-4 px-2" href="myOrders.php"><i class="fa-solid fa-boxes-stacked"></i> My Orders</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
+                <li><a class="text-danger px-2" href="logout.php"><i class="fa-solid fa-power-off"></i> Logout</a></li>
               </ul>
             </div>
           <?php endif; ?>

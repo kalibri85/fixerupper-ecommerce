@@ -80,7 +80,7 @@ a {
 }
 
 /* MEGA MENU */
-.mega-menu {
+.mega-menu, .dropdown-menu  {
   background: var(--color-dark);
   border: none;
   border-radius: 0 !important;   /* no rounded corners */
