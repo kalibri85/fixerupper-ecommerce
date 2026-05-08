@@ -378,3 +378,7 @@ a {
     font-size: 28px;
   }
 }
+/* CHECKOUT */
+.summary-sticky {
+    top: 120px;
+}
