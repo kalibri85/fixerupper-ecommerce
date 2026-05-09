@@ -44,7 +44,7 @@
           <li class="nav-item"><a class="nav-link <?= ($currentPage == 'brands.php' ? 'active' : '') ?>" href="brands.php">Brands</a></li>
           <li class="nav-item"><a class="nav-link <?= ($currentPage == 'deliveryMethods.php' ? 'active' : '') ?>" href="deliveryMethods.php">Delivery</a></li>
           <li class="nav-item"><a class="nav-link <?= ($currentPage == 'feedbacks.php' ? 'active' : '') ?>" href="feedbacks.php">Feedbacks</a></li>
-          <li class="nav-item"><a class="nav-link <?= ($currentPage == '' ? 'active' : '') ?>" href="">Orders</a></li>
+          <li class="nav-item"><a class="nav-link <?= ($currentPage == '' ? 'active' : '') ?>" href="orders.php">Orders</a></li>
           <li class="nav-item">
             <!-- Check if admin logged in. If user logged in show Logout link instead of Admin Sign In-->
             <?php 
