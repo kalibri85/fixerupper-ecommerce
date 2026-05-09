@@ -7,7 +7,7 @@ require_once __DIR__ . '/includes/init.php';
 requireCustomer();
 
 $order_id = (int)($_GET['id'] ?? 0);
-if (!$order_id) redirect('my_orders.php');
+if (!$order_id) redirect('myOrders.php');
 
 // Load order — must belong to this customer
 $stmt = $conn->prepare("
@@ -23,16 +23,22 @@ $stmt = $conn->prepare("
         d.status          AS delivery_status,
         d.shipped_at,
         d.delivered_at,
-        a.fullName,
-        a.address,
-        a.city,
-        a.postcode,
-        a.country
+        da.fullName       AS del_fullName,
+        da.address        AS del_address,
+        da.city           AS del_city,
+        da.postcode       AS del_postcode,
+        da.country        AS del_country,
+        ba.fullName       AS bill_fullName,
+        ba.address        AS bill_address,
+        ba.city           AS bill_city,
+        ba.postcode       AS bill_postcode,
+        ba.country        AS bill_country
     FROM orders o
-    LEFT JOIN delivery d         ON d.id = o.deliveryID
+    LEFT JOIN delivery d ON d.id = o.deliveryID
     LEFT JOIN delivery_method dm ON dm.id = d.methodID
     LEFT JOIN payment_methods pm ON pm.id = o.peymentMethodID
-    LEFT JOIN addresses a        ON a.id = d.addressID
+    LEFT JOIN addresses da ON da.id = d.addressID
+    LEFT JOIN addresses ba ON ba.userID = o.userID AND ba.billing = 1
     WHERE o.id = ? AND o.userID = ?
 ");
 $stmt->bind_param("ii", $order_id, $_SESSION['customer_id']);
@@ -82,7 +88,7 @@ include('./includes/header.php');
 
         <nav class="breadcrumbs mb-4">
             <a href="index.php">Home</a> /
-            <a href="myOrders.php">My Orders</a> /
+            <a href="my_orders.php">My Orders</a> /
             <span><?= $order_number ?></span>
         </nav>
 
@@ -95,7 +101,28 @@ include('./includes/header.php');
 
             <!-- LEFT: order items -->
             <div class="col-lg-7">
-                <div class="card p-4 mb-4">
+                <div class="row mg-4 g-3">
+                    <!-- Delivery address -->
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Delivery Address</h5>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_fullName'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_address'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_city'] ?? '—') ?>,</p> 
+                        <p><?= htmlspecialchars($order['del_postcode'] ?? '—') ?></p>
+                        <p class="mb-0"><?= htmlspecialchars($order['del_country'] ?? '—') ?></p>
+                    </div>
+
+                    <!-- Billing address -->
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Billing Address</h5>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_fullName'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_address'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_city'] ?? '—') ?>, </p>
+                        <p><?= htmlspecialchars($order['bill_postcode'] ?? '—') ?></p>
+                        <p class="mb-0"><?= htmlspecialchars($order['bill_country'] ?? '—') ?></p>
+                    </div>
+                </div>    
+                <div class="card p-4 my-4 ">
                     <h5 class="mb-3">Items</h5>
 
                     <?php while ($item = $items->fetch_assoc()): ?>
@@ -165,15 +192,6 @@ include('./includes/header.php');
                     <?php endif; ?>
                 </div>
 
-                <!-- Delivery address -->
-                <div class="card p-4 mb-4">
-                    <h5 class="mb-3">Delivery Address</h5>
-                    <p class="mb-1"><?= htmlspecialchars($order['fullName'] ?? '—') ?></p>
-                    <p class="mb-1"><?= htmlspecialchars($order['address'] ?? '—') ?></p>
-                    <p class="mb-1"><?= htmlspecialchars($order['city'] ?? '—') ?>, <?= htmlspecialchars($order['postcode'] ?? '—') ?></p>
-                    <p class="mb-0"><?= htmlspecialchars($order['country'] ?? '—') ?></p>
-                </div>
-
                 <!-- Payment -->
                 <div class="card p-4 mb-4">
                     <h5 class="mb-3">Payment</h5>
@@ -194,5 +212,3 @@ include('./includes/header.php');
 
     </div>
 </section>
-
-<?php include('includes/footer.php'); ?>
