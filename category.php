@@ -99,12 +99,16 @@
         }
     }
 
-    // Get products
+    // Get products and their rating
     $sql = "
-        SELECT p.*, b.name AS brand_name 
+        SELECT p.*, b.name AS brand_name,
+        ROUND(AVG(r.rating) * 2) / 2 AS avg_rating,
+               COUNT(r.id) AS total_reviews
         FROM products p
         LEFT JOIN brands b ON p.brandID = b.id
+        LEFT JOIN reviews r ON r.productID = p.id AND r.status = 1
         $where
+        GROUP BY p.id
         $order
     ";
     $products = $conn->query($sql);
@@ -137,10 +141,10 @@
         <select id="sortSelect" class="form-select form-select-sm w-auto d-inline-block">
             <option value="">Sort by</option>
             <option value="price_asc" <?= ($_GET['sort'] ?? '') == 'price_asc' ? 'selected' : '' ?>>
-                Price: Low → High
+                Price: <i class="fa-solid fa-arrow-down-short-wide"></i>
             </option>
             <option value="price_desc" <?= ($_GET['sort'] ?? '') == 'price_desc' ? 'selected' : '' ?>>
-                Price: High → Low
+                Price: <i class="fa-solid fa-arrow-down-wide-short"></i>
             </option>
         </select>
       </div>
@@ -264,28 +268,38 @@
 
       <!-- PRODUCTS -->
       <div class="col-md-9">
-
-        <div class="row g-4">
-
+        <div class="row g-4 text-center">
           <?php while ($p = $products->fetch_assoc()): ?>
-            <div class="col-md-3 col-6">
+            <div class="col-md-4 col-6">
               <a href="product.php?id=<?= $p['id'] ?>">
                 <div class="product-card p-2">
 
                   <img src="img/products/<?= $p['image'] ?>" class="img-fluid">
 
                   <div class="p-2">
-                    <div class="rating text-end">★★★★★</div>
+                    <div class="rating d-flex justify-content-end gap-1">
+                        <?php
+                        $avg = (float)($p['avg_rating'] ?? 0);
+                        for ($i = 1; $i <= 5; $i++):
+                            if ($avg >= $i): ?>
+                                <i class="fa-solid fa-star fa-xs star-filled"></i>
+                            <?php elseif ($avg >= $i - 0.5): ?>
+                                <i class="fa-solid fa-star-half-stroke fa-xs star-filled"></i>
+                            <?php else: ?>
+                                <i class="fa-regular fa-star fa-xs star-empty"></i>
+                            <?php endif;
+                        endfor; ?>
+                    </div>
 
                     <?php if (!empty($p['brand_name'])): ?>
-                      <div class="product-brand">
+                      <div class="product-brand pt-3">
                         <?= htmlspecialchars($p['brand_name']) ?>
                       </div>
                     <?php endif; ?>
 
                     <h6><?= htmlspecialchars($p['name']) ?></h6>
 
-                    <div class="price">£<?= number_format($p['price'], 2) ?></div>
+                    <div class="price text-center">£<?= number_format($p['price'], 2) ?></div>
                         <div class="text-center">
                              <form method="POST" action="addToCart.php" class="add-to-cart-form">
                                 <input type="hidden" name="csrf_token" value="<?= csrf() ?>">

@@ -54,6 +54,29 @@
     while ($v = $variations->fetch_assoc()) {
         $variation_map[$v['attr_name']][] = $v;
     }
+    // Reviews
+    $rev_stmt = $conn->prepare("
+        SELECT r.rating, r.comment, r.created_at, u.name
+        FROM reviews r
+        JOIN users u ON u.id = r.userID
+        WHERE r.productID = ? AND r.status = 1
+        ORDER BY r.created_at DESC
+    ");
+    $rev_stmt->bind_param("i", $product_id);
+    $rev_stmt->execute();
+    $reviews = $rev_stmt->get_result();
+ 
+    // Average rating
+    $avg_stmt = $conn->prepare("
+        SELECT AVG(rating) AS avg_rating, COUNT(*) AS total
+        FROM reviews
+        WHERE productID = ? AND status = 1
+    ");
+    $avg_stmt->bind_param("i", $product_id);
+    $avg_stmt->execute();
+    $rating_data   = $avg_stmt->get_result()->fetch_assoc();
+    $avg_rating    = round(($rating_data['avg_rating'] ?? 0) * 2) / 2;
+    $total_reviews = (int)$rating_data['total'];
 
 ?>
 
@@ -99,7 +122,25 @@
                       <?= htmlspecialchars($product['brand_name']) ?>
                   </div>
                 <?php endif; ?>
-                <div class="rating">★★★★★</div>
+                <!-- RATING -->
+                <div class="rating d-flex align-items-center gap-2">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <?php if ($avg_rating >= $i): ?>
+                            <i class="fa-solid fa-star star-filled"></i>
+                        <?php elseif ($avg_rating >= $i - 0.5): ?>
+                            <i class="fa-solid fa-star-half-stroke star-filled"></i>
+                        <?php else: ?>
+                            <i class="fa-regular fa-star star-empty"></i>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    <small class="text-muted">
+                        <?php if ($total_reviews > 0): ?>
+                            <?= number_format($avg_rating, 1) ?> (<?= $total_reviews ?> <?= $total_reviews === 1 ? 'review' : 'reviews' ?>)
+                        <?php else: ?>
+                            No reviews yet
+                        <?php endif; ?>
+                    </small>
+                </div>
               </div>
 
               <div class="price mb-3">£<span id="productPrice" data-base-price="<?= (float)$product['price'] ?>"><?= number_format($product['price'], 2) ?></span></div>
@@ -232,7 +273,51 @@
         </div>
 
         <div class="tab-pane fade" id="reviews">
-            <p>No reviews yet.</p>
+            <?php if ($total_reviews === 0): ?>
+                <p class="text-muted">No reviews yet.</p>
+            <?php else: ?>
+ 
+                <!-- Summary -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="fs-2 fw-bold"><?= number_format($avg_rating, 1) ?></span>
+                    <div>
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <?php if ($avg_rating >= $i): ?>
+                                <i class="fa-solid fa-star star-filled"></i>
+                            <?php elseif ($avg_rating >= $i - 0.5): ?>
+                                <i class="fa-solid fa-star-half-stroke star-filled"></i>
+                            <?php else: ?>
+                                <i class="fa-regular fa-star star-empty"></i>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                        <br>
+                        <small class="text-muted"><?= $total_reviews ?> <?= $total_reviews === 1 ? 'review' : 'reviews' ?></small>
+                    </div>
+                </div>
+ 
+                <!-- Review list -->
+                <?php while ($review = $reviews->fetch_assoc()): ?>
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong><?= htmlspecialchars($review['name']) ?></strong>
+                            <small class="text-muted"><?= date('d M Y', strtotime($review['created_at'])) ?></small>
+                        </div>
+                        <div class="mb-1">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php if ($review['rating'] >= $i): ?>
+                                    <i class="fa-solid fa-star fa-sm star-filled"></i>
+                                <?php else: ?>
+                                    <i class="fa-regular fa-star fa-sm star-empty"></i>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+                        </div>
+                        <?php if ($review['comment']): ?>
+                            <p class="mb-0"><?= htmlspecialchars($review['comment']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endwhile; ?>
+ 
+            <?php endif; ?>
         </div>
 
     </div>

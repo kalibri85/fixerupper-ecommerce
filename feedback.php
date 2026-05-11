@@ -152,7 +152,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Rating <span class="text-danger">*</span></label>
                                         <div class="star-rating">
-                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php for ($i = 5; $i >=1; $i--): ?>
                                                 <input type="radio"
                                                        name="rating"
                                                        id="star_<?= $collapse_id ?>_<?= $i ?>"
