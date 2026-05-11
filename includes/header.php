@@ -14,7 +14,7 @@
   <!-- Montserrat font -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="./css/style15.css">
+  <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
   <!-- header.php -->
