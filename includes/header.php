@@ -53,6 +53,7 @@
               </a>
               <ul class="dropdown-menu align-items-center justify-content-between">
                 <li><a class="nav-link me-4 px-2" href="myOrders.php"><i class="fa-solid fa-boxes-stacked"></i> My Orders</a></li>
+                <li><a class="nav-link me-4 px-2" href="feedback.php"><i class="fa-regular fa-comment-dots"></i> Feedback</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="text-danger px-2" href="logout.php"><i class="fa-solid fa-power-off"></i> Logout</a></li>
               </ul>

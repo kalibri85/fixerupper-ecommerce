@@ -10,6 +10,8 @@
   --color-bg: #F5FBFF;
   --color-white: #ffffff;
   --color-border: #eee;
+
+  --color-star: #f5a623;
 }
 
 /* BASE */
@@ -257,7 +259,7 @@ a {
 }
 
 .rating {
-  color: #f5b50a;
+  color: var(--color-star);
   font-size: 16px;
 }
 
@@ -320,6 +322,32 @@ a {
 
 .quantity-group .form-control {
   height: 42px;
+}
+/* STAR RATING */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label i {
+    color: var(--color-border);
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.star-rating label:hover i,
+.star-rating label:hover ~ label i {
+    color: var(--color-star);
+}
+
+.star-rating input:checked ~ label i {
+    color: var(--color-star);
 }
 /* ===== PRODUCT TABS CUSTOM ===== */
 /* tabs base */

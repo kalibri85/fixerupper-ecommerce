@@ -1,8 +1,8 @@
 <?php
- /**
- *
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
+    /**
+     *
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
     require_once __DIR__ . '/includes/init.php';
 
     requireAdmin();

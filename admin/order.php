@@ -1,135 +1,141 @@
 <?php
-/**
- * Admin — Single Order
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
-requireAdmin();
+    /**
+     * Admin — Single Order
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
+    requireAdmin();
 
-$order_id = (int)($_GET['id'] ?? 0);
-if (!$order_id) redirect('orders.php');
+    $order_id = (int)($_GET['id'] ?? 0);
+    if (!$order_id) redirect('orders.php');
 
-// Update status
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-    checkCSRF();
+    // Update status
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+        checkCSRF();
 
-    $new_status = $_POST['status'] ?? '';
-    $allowed    = ['pending', 'shipped', 'completed'];
+        $new_status = $_POST['status'] ?? '';
+        $allowed    = ['pending', 'shipped', 'completed'];
 
-    if (in_array($new_status, $allowed)) {
+        if (in_array($new_status, $allowed)) {
+            $now = date('Y-m-d H:i:s');
+
+            // Update orders table
+            $upd = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+            $upd->bind_param("si", $new_status, $order_id);
+            $upd->execute();
+
+            // Update delivery table based on status
+            if ($new_status === 'shipped') {
+                // orders: shipped, delivery: shipped + shipped_at
+                $upd_del = $conn->prepare("
+                    UPDATE delivery SET status = 'shipped', shipped_at = ?
+                    WHERE orderID = ?
+                ");
+                $upd_del->bind_param("si", $now, $order_id);
+                $upd_del->execute();
+
+            } elseif ($new_status === 'completed') {
+                // orders: completed, delivery: delivered + delivered_at
+                $upd_del = $conn->prepare("
+                    UPDATE delivery SET status = 'delivered', delivered_at = ?
+                    WHERE orderID = ?
+                ");
+                $upd_del->bind_param("si", $now, $order_id);
+                $upd_del->execute();
+            }
+
+            redirect("order.php?id=$order_id&msg=updated");
+        }
+    }
+
+    // Handle failed delivery
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_failed'])) {
+        checkCSRF();
         $now = date('Y-m-d H:i:s');
 
-        // Update orders table
-        $upd = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $upd->bind_param("si", $new_status, $order_id);
-        $upd->execute();
+        $upd_del = $conn->prepare("
+            UPDATE delivery SET status = 'failed', delivered_at = ?
+            WHERE orderID = ?
+        ");
+        $upd_del->bind_param("si", $now, $order_id);
+        $upd_del->execute();
 
-        // Update delivery table based on status
-        if ($new_status === 'shipped') {
-            // orders: shipped, delivery: shipped + shipped_at
-            $upd_del = $conn->prepare("
-                UPDATE delivery SET status = 'shipped', shipped_at = ?
-                WHERE orderID = ?
-            ");
-            $upd_del->bind_param("si", $now, $order_id);
-            $upd_del->execute();
-
-        } elseif ($new_status === 'completed') {
-            // orders: completed, delivery: delivered + delivered_at
-            $upd_del = $conn->prepare("
-                UPDATE delivery SET status = 'delivered', delivered_at = ?
-                WHERE orderID = ?
-            ");
-            $upd_del->bind_param("si", $now, $order_id);
-            $upd_del->execute();
-        }
-
-        redirect("order.php?id=$order_id&msg=updated");
+        redirect("order.php?id=$order_id&msg=failed");
     }
-}
 
-// Handle failed delivery
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_failed'])) {
-    checkCSRF();
-    $now = date('Y-m-d H:i:s');
-
-    $upd_del = $conn->prepare("
-        UPDATE delivery SET status = 'failed', delivered_at = ?
-        WHERE orderID = ?
+    // Load order
+    $stmt = $conn->prepare("
+        SELECT
+            o.id,
+            o.status,
+            o.total,
+            o.totalItems,
+            o.deliveryPrice,
+            o.created_at,
+            u.name,
+            u.surname,
+            u.email,
+            u.tel,
+            pm.title          AS payment_method,
+            dm.title          AS delivery_method,
+            d.id              AS delivery_id,
+            d.status          AS delivery_status,
+            d.shipped_at,
+            d.delivered_at,
+            da.fullName       AS del_fullName,
+            da.address        AS del_address,
+            da.city           AS del_city,
+            da.postcode       AS del_postcode,
+            da.country        AS del_country,
+            ba.fullName       AS bill_fullName,
+            ba.address        AS bill_address,
+            ba.city           AS bill_city,
+            ba.postcode       AS bill_postcode,
+            ba.country        AS bill_country
+        FROM orders o
+        LEFT JOIN users u            ON u.id  = o.userID
+        LEFT JOIN delivery d         ON d.id  = o.deliveryID
+        LEFT JOIN delivery_method dm ON dm.id = d.methodID
+        LEFT JOIN payment_methods pm ON pm.id = o.peymentMethodID
+        LEFT JOIN addresses da       ON da.id = d.addressID
+        LEFT JOIN addresses ba       ON ba.userID = o.userID AND ba.billing = 1
+        WHERE o.id = ?
     ");
-    $upd_del->bind_param("si", $now, $order_id);
-    $upd_del->execute();
+    $stmt->bind_param("i", $order_id);
+    $stmt->execute();
+    $order = $stmt->get_result()->fetch_assoc();
 
-    redirect("order.php?id=$order_id&msg=failed");
-}
+    if (!$order) redirect('orders.php');
 
-// Load order
-$stmt = $conn->prepare("
-    SELECT
-        o.id,
-        o.status,
-        o.total,
-        o.totalItems,
-        o.deliveryPrice,
-        o.created_at,
-        u.name,
-        u.surname,
-        u.email,
-        u.tel,
-        pm.title          AS payment_method,
-        dm.title          AS delivery_method,
-        d.id              AS delivery_id,
-        d.status          AS delivery_status,
-        d.shipped_at,
-        d.delivered_at,
-        a.fullName,
-        a.address,
-        a.city,
-        a.postcode,
-        a.country
-    FROM orders o
-    LEFT JOIN users u            ON u.id  = o.userID
-    LEFT JOIN delivery d         ON d.id  = o.deliveryID
-    LEFT JOIN delivery_method dm ON dm.id = d.methodID
-    LEFT JOIN payment_methods pm ON pm.id = o.peymentMethodID
-    LEFT JOIN addresses a        ON a.id  = d.addressID
-    WHERE o.id = ?
-");
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$order = $stmt->get_result()->fetch_assoc();
+    // Load order items 
+    $items_stmt = $conn->prepare("
+        SELECT oi.quantity, oi.price, p.name, p.image, p.sku
+        FROM order_items oi
+        JOIN products p ON p.id = oi.productID
+        WHERE oi.orderID = ?
+    ");
+    $items_stmt->bind_param("i", $order_id);
+    $items_stmt->execute();
+    $items = $items_stmt->get_result();
 
-if (!$order) redirect('orders.php');
+    $order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
+    $subtotal     = $order['total'] - $order['deliveryPrice'];
 
-// Load order items
-$items_stmt = $conn->prepare("
-    SELECT oi.quantity, oi.price, p.name, p.image, p.sku
-    FROM order_items oi
-    JOIN products p ON p.id = oi.productID
-    WHERE oi.orderID = ?
-");
-$items_stmt->bind_param("i", $order_id);
-$items_stmt->execute();
-$items = $items_stmt->get_result();
+    $status_class = match($order['status']) {
+        'pending'   => 'bg-warning text-dark',
+        'shipped'   => 'bg-info text-dark',
+        'completed' => 'bg-success',
+        default     => 'bg-secondary'
+    };
 
-$order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
-$subtotal     = $order['total'] - $order['deliveryPrice'];
+    $del_class = match($order['delivery_status']) {
+        'shipped'   => 'bg-info text-dark',
+        'delivered' => 'bg-success',
+        'failed'    => 'bg-danger',
+        default     => 'bg-secondary'
+    };
 
-$status_class = match($order['status']) {
-    'pending'   => 'bg-warning text-dark',
-    'shipped'   => 'bg-info text-dark',
-    'completed' => 'bg-success',
-    default     => 'bg-secondary'
-};
-
-$del_class = match($order['delivery_status']) {
-    'shipped'   => 'bg-info text-dark',
-    'delivered' => 'bg-success',
-    'failed'    => 'bg-danger',
-    default     => 'bg-secondary'
-};
-
-include('./includes/header.php');
+    include('./includes/header.php');
 ?>
 
 <!-- Title -->
@@ -168,7 +174,6 @@ include('./includes/header.php');
                 <!-- Update status -->
                 <div class="card p-4 mb-4">
                     <h5 class="mb-3">Update Order Status</h5>
-
                     <form method="POST" class="d-flex gap-2 align-items-center">
                         <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
                         <select name="status" class="form-select">
@@ -191,6 +196,24 @@ include('./includes/header.php');
                         </form>
                     <?php endif; ?>
                 </div>
+                <div class="row p-4 mb-4">
+                    <!-- Billing Address -->
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Billing Address</h5>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_fullName'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_address'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['bill_city'] ?? '—') ?>, <?= htmlspecialchars($order['bill_postcode'] ?? '—') ?></p>
+                        <p class="mb-0"><?= htmlspecialchars($order['bill_country'] ?? '—') ?></p>
+                    </div>
+                    <!-- Delivery Address -->
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Delivery Address</h5>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_fullName'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_address'] ?? '—') ?></p>
+                        <p class="mb-1"><?= htmlspecialchars($order['del_city'] ?? '—') ?>, <?= htmlspecialchars($order['del_postcode'] ?? '—') ?></p>
+                        <p class="mb-0"><?= htmlspecialchars($order['del_country'] ?? '—') ?></p>
+                    </div>
+                </div>    
                 <!-- Order items -->
                 <div class="card p-4 mb-4">
                     <h5 class="mb-3">Items</h5>
@@ -264,15 +287,6 @@ include('./includes/header.php');
                             <span><?= date('d M Y H:i', strtotime($order['delivered_at'])) ?></span>
                         </div>
                     <?php endif; ?>
-                </div>
-
-                <!-- Address -->
-                <div class="card p-4 mb-4">
-                    <h5 class="mb-3">Delivery Address</h5>
-                    <p class="mb-1"><?= htmlspecialchars($order['fullName'] ?? '—') ?></p>
-                    <p class="mb-1"><?= htmlspecialchars($order['address'] ?? '—') ?></p>
-                    <p class="mb-1"><?= htmlspecialchars($order['city'] ?? '—') ?>, <?= htmlspecialchars($order['postcode'] ?? '—') ?></p>
-                    <p class="mb-0"><?= htmlspecialchars($order['country'] ?? '—') ?></p>
                 </div>
 
                 <!-- Payment -->

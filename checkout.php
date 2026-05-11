@@ -1,58 +1,58 @@
 <?php
-/**
- * Checkout
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
+    /**
+     * Checkout
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
 
-$cart = $_SESSION['cart'] ?? [];
-if (empty($cart)) {
-    redirect('cart.php');
-}
-requireCustomer();
+    $cart = $_SESSION['cart'] ?? [];
+    if (empty($cart)) {
+        redirect('cart.php');
+    }
+    requireCustomer();
 
-// ── Cart products ─────────────────────────────────────────────────────────────
-$ids      = implode(',', array_map('intval', array_keys($cart)));
-$result   = $conn->query("SELECT id, name, price, image FROM products WHERE id IN ($ids) AND status = 1");
-$products = [];
-$totalItems = 0;
-$subtotal   = 0;
+    // Cart products
+    $ids      = implode(',', array_map('intval', array_keys($cart)));
+    $result   = $conn->query("SELECT id, name, price, image FROM products WHERE id IN ($ids) AND status = 1");
+    $products = [];
+    $totalItems = 0;
+    $subtotal   = 0;
 
-while ($row = $result->fetch_assoc()) {
-    $qty             = $cart[$row['id']];
-    $row['qty']      = $qty;
-    $row['subtotal'] = $row['price'] * $qty;
-    $totalItems     += $qty;
-    $subtotal       += $row['subtotal'];
-    $products[]      = $row;
-}
+    while ($row = $result->fetch_assoc()) {
+        $qty             = $cart[$row['id']];
+        $row['qty']      = $qty;
+        $row['subtotal'] = $row['price'] * $qty;
+        $totalItems     += $qty;
+        $subtotal       += $row['subtotal'];
+        $products[]      = $row;
+    }
 
-// ── Delivery methods ──────────────────────────────────────────────────────────
-$delivery_result = $conn->query("SELECT id, title, price FROM delivery_method WHERE active = 1 ORDER BY price ASC");
-$delivery_methods = [];
-while ($d = $delivery_result->fetch_assoc()) {
-    $delivery_methods[] = $d;
-}
+    // Delivery methods
+    $delivery_result = $conn->query("SELECT id, title, price FROM delivery_method WHERE active = 1 ORDER BY price ASC");
+    $delivery_methods = [];
+    while ($d = $delivery_result->fetch_assoc()) {
+        $delivery_methods[] = $d;
+    }
 
-// ── Payment methods ───────────────────────────────────────────────────────────
-$payment_result = $conn->query("SELECT id, title FROM payment_methods ORDER BY id ASC");
-$payment_methods = [];
-while ($p = $payment_result->fetch_assoc()) {
-    $payment_methods[] = $p;
-}
+    // Payment methods
+    $payment_result = $conn->query("SELECT id, title FROM payment_methods ORDER BY id ASC");
+    $payment_methods = [];
+    while ($p = $payment_result->fetch_assoc()) {
+        $payment_methods[] = $p;
+    }
 
-// ── Customer + billing address ────────────────────────────────────────────────
-$stmt = $conn->prepare("SELECT name, surname, email, tel FROM users WHERE id = ?");
-$stmt->bind_param("i", $_SESSION['customer_id']);
-$stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
+    // Customer + billing address
+    $stmt = $conn->prepare("SELECT name, surname, email, tel FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['customer_id']);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
 
-$addr_stmt = $conn->prepare("SELECT * FROM addresses WHERE userID = ? AND billing = 1 LIMIT 1");
-$addr_stmt->bind_param("i", $_SESSION['customer_id']);
-$addr_stmt->execute();
-$billing = $addr_stmt->get_result()->fetch_assoc();
+    $addr_stmt = $conn->prepare("SELECT * FROM addresses WHERE userID = ? AND billing = 1 LIMIT 1");
+    $addr_stmt->bind_param("i", $_SESSION['customer_id']);
+    $addr_stmt->execute();
+    $billing = $addr_stmt->get_result()->fetch_assoc();
 
-include('./includes/header.php');
+    include('./includes/header.php');
 ?>
 
 <section class="py-5">

@@ -1,61 +1,61 @@
 <?php
-/**
- * Admin — Orders
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
-requireAdmin();
-include('./includes/header.php');
+    /**
+     * Admin — Orders
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
+    requireAdmin();
+    include('./includes/header.php');
 
-// Filters & sorting
-$status_filter = $_GET['status'] ?? '';
-$sort          = $_GET['sort']   ?? 'newest';
+    // Filters & sorting
+    $status_filter = $_GET['status'] ?? '';
+    $sort          = $_GET['sort']   ?? 'newest';
 
-$allowed_statuses = ['pending', 'shipped', 'completed'];
-$allowed_sorts    = ['newest', 'oldest', 'total_asc', 'total_desc'];
+    $allowed_statuses = ['pending', 'shipped', 'completed'];
+    $allowed_sorts    = ['newest', 'oldest', 'total_asc', 'total_desc'];
 
-if (!in_array($status_filter, $allowed_statuses)) $status_filter = '';
-if (!in_array($sort, $allowed_sorts))             $sort = 'newest';
+    if (!in_array($status_filter, $allowed_statuses)) $status_filter = '';
+    if (!in_array($sort, $allowed_sorts))             $sort = 'newest';
 
-$order_by = match($sort) {
-    'oldest'     => 'o.created_at ASC',
-    'total_asc'  => 'o.total ASC',
-    'total_desc' => 'o.total DESC',
-    default      => 'o.created_at DESC'
-};
+    $order_by = match($sort) {
+        'oldest'     => 'o.created_at ASC',
+        'total_asc'  => 'o.total ASC',
+        'total_desc' => 'o.total DESC',
+        default      => 'o.created_at DESC'
+    };
 
-$where = $status_filter ? "WHERE o.status = '" . $conn->real_escape_string($status_filter) . "'" : '';
+    $where = $status_filter ? "WHERE o.status = '" . $conn->real_escape_string($status_filter) . "'" : '';
 
-// Pagination
-$total_result = $conn->query("SELECT COUNT(*) as total FROM orders o $where");
-$total        = $total_result->fetch_assoc()['total'];
-$pagination   = paginate($total, 15);
-$page         = $pagination['page'];
-$perPage      = $pagination['perPage'];
-$offset       = $pagination['offset'];
-$totalPages   = $pagination['totalPages'];
+    // Pagination
+    $total_result = $conn->query("SELECT COUNT(*) as total FROM orders o $where");
+    $total        = $total_result->fetch_assoc()['total'];
+    $pagination   = paginate($total, 15);
+    $page         = $pagination['page'];
+    $perPage      = $pagination['perPage'];
+    $offset       = $pagination['offset'];
+    $totalPages   = $pagination['totalPages'];
 
-// Orders
-$result = $conn->query("
-    SELECT
-        o.id,
-        o.status,
-        o.total,
-        o.totalItems,
-        o.created_at,
-        u.name,
-        u.surname
-    FROM orders o
-    LEFT JOIN users u ON u.id = o.userID
-    $where
-    ORDER BY $order_by
-    LIMIT $offset, $perPage
-");
+    // Orders
+    $result = $conn->query("
+        SELECT
+            o.id,
+            o.status,
+            o.total,
+            o.totalItems,
+            o.created_at,
+            u.name,
+            u.surname
+        FROM orders o
+        LEFT JOIN users u ON u.id = o.userID
+        $where
+        ORDER BY $order_by
+        LIMIT $offset, $perPage
+    ");
 
-$base_url = 'orders.php?' . http_build_query(array_filter([
-    'status' => $status_filter,
-    'sort'   => $sort,
-])) . '&';
+    $base_url = 'orders.php?' . http_build_query(array_filter([
+        'status' => $status_filter,
+        'sort'   => $sort,
+    ])) . '&';
 ?>
 
 <!-- Title -->

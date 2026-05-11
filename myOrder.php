@@ -1,86 +1,86 @@
 <?php
-/**
- * My Order — single order details
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
-requireCustomer();
+    /**
+     * My Order — single order details
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
+    requireCustomer();
 
-$order_id = (int)($_GET['id'] ?? 0);
-if (!$order_id) redirect('myOrders.php');
+    $order_id = (int)($_GET['id'] ?? 0);
+    if (!$order_id) redirect('myOrders.php');
 
-// Load order — must belong to this customer
-$stmt = $conn->prepare("
-    SELECT
-        o.id,
-        o.status,
-        o.total,
-        o.totalItems,
-        o.deliveryPrice,
-        o.created_at,
-        pm.title          AS payment_method,
-        dm.title          AS delivery_method,
-        d.status          AS delivery_status,
-        d.shipped_at,
-        d.delivered_at,
-        da.fullName       AS del_fullName,
-        da.address        AS del_address,
-        da.city           AS del_city,
-        da.postcode       AS del_postcode,
-        da.country        AS del_country,
-        ba.fullName       AS bill_fullName,
-        ba.address        AS bill_address,
-        ba.city           AS bill_city,
-        ba.postcode       AS bill_postcode,
-        ba.country        AS bill_country
-    FROM orders o
-    LEFT JOIN delivery d ON d.id = o.deliveryID
-    LEFT JOIN delivery_method dm ON dm.id = d.methodID
-    LEFT JOIN payment_methods pm ON pm.id = o.peymentMethodID
-    LEFT JOIN addresses da ON da.id = d.addressID
-    LEFT JOIN addresses ba ON ba.userID = o.userID AND ba.billing = 1
-    WHERE o.id = ? AND o.userID = ?
-");
-$stmt->bind_param("ii", $order_id, $_SESSION['customer_id']);
-$stmt->execute();
-$order = $stmt->get_result()->fetch_assoc();
+    // Load order — must belong to this customer
+    $stmt = $conn->prepare("
+        SELECT
+            o.id,
+            o.status,
+            o.total,
+            o.totalItems,
+            o.deliveryPrice,
+            o.created_at,
+            pm.title          AS payment_method,
+            dm.title          AS delivery_method,
+            d.status          AS delivery_status,
+            d.shipped_at,
+            d.delivered_at,
+            da.fullName       AS del_fullName,
+            da.address        AS del_address,
+            da.city           AS del_city,
+            da.postcode       AS del_postcode,
+            da.country        AS del_country,
+            ba.fullName       AS bill_fullName,
+            ba.address        AS bill_address,
+            ba.city           AS bill_city,
+            ba.postcode       AS bill_postcode,
+            ba.country        AS bill_country
+        FROM orders o
+        LEFT JOIN delivery d ON d.id = o.deliveryID
+        LEFT JOIN delivery_method dm ON dm.id = d.methodID
+        LEFT JOIN payment_methods pm ON pm.id = o.peymentMethodID
+        LEFT JOIN addresses da ON da.id = d.addressID
+        LEFT JOIN addresses ba ON ba.userID = o.userID AND ba.billing = 1
+        WHERE o.id = ? AND o.userID = ?
+    ");
+    $stmt->bind_param("ii", $order_id, $_SESSION['customer_id']);
+    $stmt->execute();
+    $order = $stmt->get_result()->fetch_assoc();
 
-if (!$order) redirect('my_orders.php');
+    if (!$order) redirect('my_orders.php');
 
-// Load order items
-$items_stmt = $conn->prepare("
-    SELECT
-        oi.quantity,
-        oi.price,
-        p.name,
-        p.image
-    FROM order_items oi
-    JOIN products p ON p.id = oi.productID
-    WHERE oi.orderID = ?
-");
-$items_stmt->bind_param("i", $order_id);
-$items_stmt->execute();
-$items = $items_stmt->get_result();
+    // Load order items
+    $items_stmt = $conn->prepare("
+        SELECT
+            oi.quantity,
+            oi.price,
+            p.name,
+            p.image
+        FROM order_items oi
+        JOIN products p ON p.id = oi.productID
+        WHERE oi.orderID = ?
+    ");
+    $items_stmt->bind_param("i", $order_id);
+    $items_stmt->execute();
+    $items = $items_stmt->get_result();
 
-$order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
-$subtotal     = $order['total'] - $order['deliveryPrice'];
+    $order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
+    $subtotal     = $order['total'] - $order['deliveryPrice'];
 
-// Status badges
-$status_class = match($order['status']) {
-    'pending'   => 'bg-warning text-dark',
-    'shipped'   => 'bg-info text-dark',
-    'completed' => 'bg-success',
-    default     => 'bg-secondary'
-};
+    // Status badges
+    $status_class = match($order['status']) {
+        'pending'   => 'bg-warning text-dark',
+        'shipped'   => 'bg-info text-dark',
+        'completed' => 'bg-success',
+        default     => 'bg-secondary'
+    };
 
-$del_class = match($order['delivery_status']) {
-    'shipped'   => 'bg-info text-dark',
-    'delivered' => 'bg-success',
-    'failed'    => 'bg-danger',
-    default     => 'bg-secondary'
-};
+    $del_class = match($order['delivery_status']) {
+        'shipped'   => 'bg-info text-dark',
+        'delivered' => 'bg-success',
+        'failed'    => 'bg-danger',
+        default     => 'bg-secondary'
+    };
 
-include('./includes/header.php');
+    include('./includes/header.php');
 ?>
 
 <section class="py-5">

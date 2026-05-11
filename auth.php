@@ -1,155 +1,155 @@
 <?php
-/**
- * Auth — Login / Register
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
+    /**
+     * Auth — Login / Register
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
 
-// Already logged in → go to checkout or home
-if (isCustomer()) {
-    $dest = $_SESSION['redirect_after_login'] ?? 'index.php';
-    unset($_SESSION['redirect_after_login']);
-    redirect($dest);
-}
-
-$login_error    = '';
-$register_error = '';
-$active_tab     = 'login'; // which tab to show on load
-$fields         = [];      // repopulate register form on error
-
-// ══════════════════════════════════════════════
-// LOGIN
-// ══════════════════════════════════════════════
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
-    checkCSRF();
-
-    $email = trim($_POST['email'] ?? '');
-    $pass  = $_POST['password'] ?? '';
-
-    $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $user = $stmt->get_result()->fetch_assoc();
-
-    if ($user && $user['role'] === 0 && password_verify($pass, $user['password'])) {
-        session_regenerate_id(true);
-        $_SESSION['customer_id']   = $user['id'];
-        $_SESSION['customer_name'] = $user['name'];
-        $_SESSION['customer_role'] = 0;
-
+    // Already logged in → go to checkout or home
+    if (isCustomer()) {
         $dest = $_SESSION['redirect_after_login'] ?? 'index.php';
         unset($_SESSION['redirect_after_login']);
         redirect($dest);
-    } else {
-        $login_error = "Invalid email or password.";
-        $active_tab  = 'login';
     }
-}
 
-// ══════════════════════════════════════════════
-// REGISTER
-// ══════════════════════════════════════════════
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'register') {
-    checkCSRF();
-    $active_tab = 'register';
+    $login_error    = '';
+    $register_error = '';
+    $active_tab     = 'login'; // which tab to show on load
+    $fields         = [];      // repopulate register form on error
 
-    $fields = [
-        'name'     => trim($_POST['name']     ?? ''),
-        'surname'  => trim($_POST['surname']  ?? ''),
-        'email'    => trim($_POST['email']    ?? ''),
-        'tel'      => trim($_POST['tel']      ?? ''),
-        // address fields
-        'address'  => trim($_POST['address']  ?? ''),
-        'city'     => trim($_POST['city']     ?? ''),
-        'postcode' => trim($_POST['postcode'] ?? ''),
-        'country'  => trim($_POST['country']  ?? ''),
-    ];
-    $pass    = $_POST['password']         ?? '';
-    $confirm = $_POST['password_confirm'] ?? '';
+    // ══════════════════════════════════════════════
+    // LOGIN
+    // ══════════════════════════════════════════════
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
+        checkCSRF();
 
-    // ── Validation ────────────────────────────
-    if (empty($fields['name']) || empty($fields['surname']) || empty($fields['email'])) {
-        $register_error = "Please fill in all required fields.";
-    } elseif (!filter_var($fields['email'], FILTER_VALIDATE_EMAIL)) {
-        $register_error = "Please enter a valid email address.";
-    } elseif (strlen($pass) < 8) {
-        $register_error = "Password must be at least 8 characters.";
-    } elseif (!preg_match('/[a-z]/', $pass)) {
-        $register_error = "Password must contain at least one lowercase letter.";
-    } elseif (!preg_match('/[A-Z]/', $pass)) {
-        $register_error = "Password must contain at least one uppercase letter.";
-    } elseif (!preg_match('/\d/', $pass)) {
-        $register_error = "Password must contain at least one number.";
-    } elseif (!preg_match('/[@$!%*?&#^()\-_=+]/', $pass)) {
-        $register_error = "Password must contain at least one special character (@$!%*?&#^()-_=+).";
-    } elseif ($pass !== $confirm) {
-        $register_error = "Passwords do not match.";
-    } elseif (empty($fields['address']) || empty($fields['city']) || empty($fields['postcode']) || empty($fields['country'])) {
-        $register_error = "Please fill in all required address fields.";
-    } else {
-        // Check email not already taken
-        $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $check->bind_param("s", $fields['email']);
-        $check->execute();
-        $check->store_result();
+        $email = trim($_POST['email'] ?? '');
+        $pass  = $_POST['password'] ?? '';
 
-        if ($check->num_rows > 0) {
-            $register_error = "An account with that email already exists.";
+        $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if ($user && $user['role'] === 0 && password_verify($pass, $user['password'])) {
+            session_regenerate_id(true);
+            $_SESSION['customer_id']   = $user['id'];
+            $_SESSION['customer_name'] = $user['name'];
+            $_SESSION['customer_role'] = 0;
+
+            $dest = $_SESSION['redirect_after_login'] ?? 'index.php';
+            unset($_SESSION['redirect_after_login']);
+            redirect($dest);
         } else {
-            $hash = password_hash($pass, PASSWORD_DEFAULT);
-            $role = 0;
+            $login_error = "Invalid email or password.";
+            $active_tab  = 'login';
+        }
+    }
 
-            // Insert user
-            $stmt = $conn->prepare("
-                INSERT INTO users (name, surname, email, tel, password, role)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->bind_param("sssssi",
-                $fields['name'],
-                $fields['surname'],
-                $fields['email'],
-                $fields['tel'],
-                $hash,
-                $role
-            );
+    // ══════════════════════════════════════════════
+    // REGISTER
+    // ══════════════════════════════════════════════
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'register') {
+        checkCSRF();
+        $active_tab = 'register';
 
-            if ($stmt->execute()) {
-                $user_id = $conn->insert_id;
+        $fields = [
+            'name'     => trim($_POST['name']     ?? ''),
+            'surname'  => trim($_POST['surname']  ?? ''),
+            'email'    => trim($_POST['email']    ?? ''),
+            'tel'      => trim($_POST['tel']      ?? ''),
+            // address fields
+            'address'  => trim($_POST['address']  ?? ''),
+            'city'     => trim($_POST['city']     ?? ''),
+            'postcode' => trim($_POST['postcode'] ?? ''),
+            'country'  => trim($_POST['country']  ?? ''),
+        ];
+        $pass    = $_POST['password']         ?? '';
+        $confirm = $_POST['password_confirm'] ?? '';
 
-                // Insert billing address — fullName built from name + surname
-                $fullName  = $fields['name'] . ' ' . $fields['surname'];
-                $addr_stmt = $conn->prepare("
-                    INSERT INTO addresses (userID, fullName, phone, address, city, postcode, country, billing)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-                ");
-                $addr_stmt->bind_param("issssss",
-                    $user_id,
-                    $fullName,
-                    $fields['tel'],
-                    $fields['address'],
-                    $fields['city'],
-                    $fields['postcode'],
-                    $fields['country']
-                );
-                $addr_stmt->execute();
+        // ── Validation ────────────────────────────
+        if (empty($fields['name']) || empty($fields['surname']) || empty($fields['email'])) {
+            $register_error = "Please fill in all required fields.";
+        } elseif (!filter_var($fields['email'], FILTER_VALIDATE_EMAIL)) {
+            $register_error = "Please enter a valid email address.";
+        } elseif (strlen($pass) < 8) {
+            $register_error = "Password must be at least 8 characters.";
+        } elseif (!preg_match('/[a-z]/', $pass)) {
+            $register_error = "Password must contain at least one lowercase letter.";
+        } elseif (!preg_match('/[A-Z]/', $pass)) {
+            $register_error = "Password must contain at least one uppercase letter.";
+        } elseif (!preg_match('/\d/', $pass)) {
+            $register_error = "Password must contain at least one number.";
+        } elseif (!preg_match('/[@$!%*?&#^()\-_=+]/', $pass)) {
+            $register_error = "Password must contain at least one special character (@$!%*?&#^()-_=+).";
+        } elseif ($pass !== $confirm) {
+            $register_error = "Passwords do not match.";
+        } elseif (empty($fields['address']) || empty($fields['city']) || empty($fields['postcode']) || empty($fields['country'])) {
+            $register_error = "Please fill in all required address fields.";
+        } else {
+            // Check email not already taken
+            $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+            $check->bind_param("s", $fields['email']);
+            $check->execute();
+            $check->store_result();
 
-                // Auto-login
-                session_regenerate_id(true);
-                $_SESSION['customer_id']   = $user_id;
-                $_SESSION['customer_name'] = $fields['name'];
-                $_SESSION['customer_role'] = 0;
-
-                $dest = $_SESSION['redirect_after_login'] ?? 'index.php';
-                unset($_SESSION['redirect_after_login']);
-                redirect($dest);
+            if ($check->num_rows > 0) {
+                $register_error = "An account with that email already exists.";
             } else {
-                $register_error = "Registration failed. Please try again.";
+                $hash = password_hash($pass, PASSWORD_DEFAULT);
+                $role = 0;
+
+                // Insert user
+                $stmt = $conn->prepare("
+                    INSERT INTO users (name, surname, email, tel, password, role)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->bind_param("sssssi",
+                    $fields['name'],
+                    $fields['surname'],
+                    $fields['email'],
+                    $fields['tel'],
+                    $hash,
+                    $role
+                );
+
+                if ($stmt->execute()) {
+                    $user_id = $conn->insert_id;
+
+                    // Insert billing address — fullName built from name + surname
+                    $fullName  = $fields['name'] . ' ' . $fields['surname'];
+                    $addr_stmt = $conn->prepare("
+                        INSERT INTO addresses (userID, fullName, phone, address, city, postcode, country, billing)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                    ");
+                    $addr_stmt->bind_param("issssss",
+                        $user_id,
+                        $fullName,
+                        $fields['tel'],
+                        $fields['address'],
+                        $fields['city'],
+                        $fields['postcode'],
+                        $fields['country']
+                    );
+                    $addr_stmt->execute();
+
+                    // Auto-login
+                    session_regenerate_id(true);
+                    $_SESSION['customer_id']   = $user_id;
+                    $_SESSION['customer_name'] = $fields['name'];
+                    $_SESSION['customer_role'] = 0;
+
+                    $dest = $_SESSION['redirect_after_login'] ?? 'index.php';
+                    unset($_SESSION['redirect_after_login']);
+                    redirect($dest);
+                } else {
+                    $register_error = "Registration failed. Please try again.";
+                }
             }
         }
     }
-}
 
-include('./includes/header.php');
+    include('./includes/header.php');
 ?>
 
 <section class="py-5">
