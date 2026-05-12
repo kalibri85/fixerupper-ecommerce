@@ -62,23 +62,8 @@
     $items_stmt->execute();
     $items = $items_stmt->get_result();
 
-    $order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
+    $order_number = orderNumber($order['id']);
     $subtotal     = $order['total'] - $order['deliveryPrice'];
-
-    // Status badges
-    $status_class = match($order['status']) {
-        'pending'   => 'bg-warning text-dark',
-        'shipped'   => 'bg-info text-dark',
-        'completed' => 'bg-success',
-        default     => 'bg-secondary'
-    };
-
-    $del_class = match($order['delivery_status']) {
-        'shipped'   => 'bg-info text-dark',
-        'delivered' => 'bg-success',
-        'failed'    => 'bg-danger',
-        default     => 'bg-secondary'
-    };
 
     include('./includes/header.php');
 ?>
@@ -94,7 +79,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Order <?= $order_number ?></h1>
-            <span class="badge <?= $status_class ?> fs-6"><?= ucfirst($order['status']) ?></span>
+            <?= orderStatusBadge($order['status']) ?>
         </div>
 
         <div class="row">
@@ -172,9 +157,7 @@
 
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Status</span>
-                        <span class="badge <?= $del_class ?>">
-                            <?= $order['delivery_status'] ? ucfirst($order['delivery_status']) : 'Pending' ?>
-                        </span>
+                        <?= deliveryStatusBadge($order['delivery_status']) ?>
                     </div>
 
                     <?php if ($order['shipped_at']): ?>

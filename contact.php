@@ -24,7 +24,7 @@ include('./includes/header.php');
                     <h5 class="mb-4">Get in Touch</h5>
 
                     <div class="d-flex gap-3 mb-3">
-                        <i class="fa-solid fa-location-dot fa-lg mt-1" style="color:var(--color-accent)"></i>
+                        <i class="fa-solid fa-location-dot fa-lg mt-1"></i>
                         <div>
                             <strong>Address</strong><br>
                             173 Lucky road, LE1 3BK, Leicester
@@ -32,7 +32,7 @@ include('./includes/header.php');
                     </div>
 
                     <div class="d-flex gap-3 mb-3">
-                        <i class="fa-solid fa-envelope fa-lg mt-1" style="color:var(--color-accent)"></i>
+                        <i class="fa-solid fa-envelope fa-lg mt-1"></i>
                         <div>
                             <strong>Email</strong><br>
                             <a href="mailto:info@fixerupper.co.uk">info@fixerupper.co.uk</a>
@@ -40,7 +40,7 @@ include('./includes/header.php');
                     </div>
 
                     <div class="d-flex gap-3">
-                        <i class="fa-solid fa-phone fa-lg mt-1" style="color:var(--color-accent)"></i>
+                        <i class="fa-solid fa-phone fa-lg mt-1"></i>
                         <div>
                             <strong>Phone</strong><br>
                             <a href="tel:073988753">073988753</a>
@@ -53,7 +53,7 @@ include('./includes/header.php');
             <div class="col-md-6">
                 <div class="card p-4 h-100">
                     <h5 class="mb-4">
-                        <i class="fa-regular fa-clock me-2" style="color:var(--color-accent)"></i>
+                        <i class="fa-regular fa-clock me-2"></i>
                         Working Hours
                     </h5>
 

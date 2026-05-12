@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
-
+requireAdmin();
 $categoryID = (int)($_GET['category_id'] ?? 0);
 
 $data = [];

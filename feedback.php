@@ -66,7 +66,6 @@
             p.name,
             p.image,
             o.id AS orderID,
-            'FU-' || LPAD(o.id, 5, '0') AS order_number
         FROM order_items oi
         JOIN orders o   ON o.id  = oi.orderID
         JOIN products p ON p.id  = oi.productID
@@ -109,7 +108,7 @@
                     No products to review yet.<br>
                     Reviews are available for products from completed orders.
                 </p>
-                <a href="my_orders.php" class="btn-cta d-inline-block mx-auto" style="width:fit-content;">My Orders</a>
+                <a href="my_orders.php" class="btn-cta d-inline-block mx-auto">My Orders</a>
             </div>
         <?php else: ?>
 
@@ -133,7 +132,7 @@
                                     <div>
                                         <div><?= htmlspecialchars($product['name']) ?></div>
                                         <small class="text-muted">
-                                            Order <?= 'FU-' . str_pad($product['orderID'], 5, '0', STR_PAD_LEFT) ?>
+                                            Order <?= orderNumber($product['orderID']) ?>
                                         </small>
                                     </div>
                                 </div>

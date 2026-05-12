@@ -20,7 +20,7 @@
             $now = date('Y-m-d H:i:s');
 
             // Update orders table
-            $upd = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+            $upd = $conn->prepare("UPDATE orders SET `status` = ? WHERE `id` = ?");
             $upd->bind_param("si", $new_status, $order_id);
             $upd->execute();
 
@@ -118,22 +118,8 @@
     $items_stmt->execute();
     $items = $items_stmt->get_result();
 
-    $order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
+    $order_number = orderNumber($order['id']);
     $subtotal     = $order['total'] - $order['deliveryPrice'];
-
-    $status_class = match($order['status']) {
-        'pending'   => 'bg-warning text-dark',
-        'shipped'   => 'bg-info text-dark',
-        'completed' => 'bg-success',
-        default     => 'bg-secondary'
-    };
-
-    $del_class = match($order['delivery_status']) {
-        'shipped'   => 'bg-info text-dark',
-        'delivered' => 'bg-success',
-        'failed'    => 'bg-danger',
-        default     => 'bg-secondary'
-    };
 
     include('./includes/header.php');
 ?>
@@ -148,7 +134,7 @@
                 </a>
                 <h1 class="d-inline">Order <?= $order_number ?></h1>
             </div>
-            <span class="badge <?= $status_class ?> fs-6"><?= ucfirst($order['status']) ?></span>
+            <?= orderStatusBadge($order['status']) ?>
         </div>
 
         <?php if (isset($_GET['msg'])): ?>
@@ -253,7 +239,6 @@
 
             <!-- RIGHT: customer + delivery info -->
             <div class="col-lg-5">
-
                 <!-- Customer -->
                 <div class="card p-4 mb-4">
                     <h5 class="mb-3">Customer</h5>
@@ -271,9 +256,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Status</span>
-                        <span class="badge <?= $del_class ?>">
-                            <?= $order['delivery_status'] ? ucfirst($order['delivery_status']) : 'Pending' ?>
-                        </span>
+                        <?= deliveryStatusBadge($order['delivery_status']) ?>
                     </div>
                     <?php if ($order['shipped_at']): ?>
                         <div class="d-flex justify-content-between mb-2">

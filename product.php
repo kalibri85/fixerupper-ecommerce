@@ -124,15 +124,7 @@
                 <?php endif; ?>
                 <!-- RATING -->
                 <div class="rating d-flex align-items-center gap-2">
-                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                        <?php if ($avg_rating >= $i): ?>
-                            <i class="fa-solid fa-star star-filled"></i>
-                        <?php elseif ($avg_rating >= $i - 0.5): ?>
-                            <i class="fa-solid fa-star-half-stroke star-filled"></i>
-                        <?php else: ?>
-                            <i class="fa-regular fa-star star-empty"></i>
-                        <?php endif; ?>
-                    <?php endfor; ?>
+                    <?= renderStars($avg_rating) ?>
                     <small class="text-muted">
                         <?php if ($total_reviews > 0): ?>
                             <?= number_format($avg_rating, 1) ?> (<?= $total_reviews ?> <?= $total_reviews === 1 ? 'review' : 'reviews' ?>)
@@ -184,10 +176,8 @@
                         </div>
                     </div>
                     <div class="row product-actions align-items-center mt-3 mb-2">
-    
                         <div class="col-md-6">
                             <div class="d-flex align-items-center gap-3">
-
                                 <label for="qty" class="fw-bold mb-0">
                                     Quantity:
                                 </label>
@@ -281,15 +271,7 @@
                 <div class="d-flex align-items-center gap-3 mb-4">
                     <span class="fs-2 fw-bold"><?= number_format($avg_rating, 1) ?></span>
                     <div>
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <?php if ($avg_rating >= $i): ?>
-                                <i class="fa-solid fa-star star-filled"></i>
-                            <?php elseif ($avg_rating >= $i - 0.5): ?>
-                                <i class="fa-solid fa-star-half-stroke star-filled"></i>
-                            <?php else: ?>
-                                <i class="fa-regular fa-star star-empty"></i>
-                            <?php endif; ?>
-                        <?php endfor; ?>
+                        <?= renderStars($avg_rating) ?>
                         <br>
                         <small class="text-muted"><?= $total_reviews ?> <?= $total_reviews === 1 ? 'review' : 'reviews' ?></small>
                     </div>
@@ -302,15 +284,7 @@
                             <strong><?= htmlspecialchars($review['name']) ?></strong>
                             <small class="text-muted"><?= date('d M Y', strtotime($review['created_at'])) ?></small>
                         </div>
-                        <div class="mb-1">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <?php if ($review['rating'] >= $i): ?>
-                                    <i class="fa-solid fa-star fa-sm star-filled"></i>
-                                <?php else: ?>
-                                    <i class="fa-regular fa-star fa-sm star-empty"></i>
-                                <?php endif; ?>
-                            <?php endfor; ?>
-                        </div>
+                        <div class="mb-1"><?= renderStars((float)$review['rating'], 'fa-sm') ?></div>
                         <?php if ($review['comment']): ?>
                             <p class="mb-0"><?= htmlspecialchars($review['comment']) ?></p>
                         <?php endif; ?>

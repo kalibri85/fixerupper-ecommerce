@@ -278,17 +278,7 @@
 
                   <div class="p-2">
                     <div class="rating d-flex justify-content-end gap-1">
-                        <?php
-                        $avg = (float)($p['avg_rating'] ?? 0);
-                        for ($i = 1; $i <= 5; $i++):
-                            if ($avg >= $i): ?>
-                                <i class="fa-solid fa-star fa-xs star-filled"></i>
-                            <?php elseif ($avg >= $i - 0.5): ?>
-                                <i class="fa-solid fa-star-half-stroke fa-xs star-filled"></i>
-                            <?php else: ?>
-                                <i class="fa-regular fa-star fa-xs star-empty"></i>
-                            <?php endif;
-                        endfor; ?>
+                        <?= renderStars((float)($p['avg_rating'] ?? 0), 'fa-xs') ?>
                     </div>
 
                     <?php if (!empty($p['brand_name'])): ?>

@@ -122,13 +122,7 @@
 
         <?php while ($row = $result->fetch_assoc()): ?>
             <?php
-            $order_number = 'FU-' . str_pad($row['id'], 5, '0', STR_PAD_LEFT);
-            $status_class = match($row['status']) {
-                'pending'   => 'bg-warning text-dark',
-                'shipped'   => 'bg-info text-dark',
-                'completed' => 'bg-success',
-                default     => 'bg-secondary'
-            };
+            $order_number = orderNumber($row['id']);
             ?>
             <div class="row pt-3 pb-2 item-row align-items-center">
                 <div class="float-start col-md-2">
@@ -147,9 +141,7 @@
                     £<?= number_format($row['total'], 2) ?>
                 </div>
                 <div class="float-start col-md-1">
-                    <span class="badge <?= $status_class ?>">
-                        <?= ucfirst($row['status']) ?>
-                    </span>
+                    <?= orderStatusBadge($row['status']) ?>
                 </div>
                 <div class="float-start col-md-1">
                     <a href="order.php?id=<?= $row['id'] ?>" class="btn btn-primary">

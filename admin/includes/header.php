@@ -23,7 +23,7 @@
 <body>
 <!-- header.php -->
 <header>
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: #191b32;">
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
       <!-- Logo -->
       <a class="navbar-brand" href="../index.php">

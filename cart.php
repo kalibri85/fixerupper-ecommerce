@@ -110,7 +110,7 @@ if (!empty($cart)) {
 
             <!-- RIGHT -->
             <div class="col-lg-4">
-                <div class="card p-4 sticky-top" style="top:120px;">
+                <div class="card p-4 sticky-top">
                     <h5 class="mb-3">Order Summary</h5>
 
                     <div class="d-flex justify-content-between mb-2">

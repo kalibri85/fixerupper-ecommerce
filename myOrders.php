@@ -1,32 +1,32 @@
 <?php
-/**
- * My Orders — customer order history
- * @author Lana (Svetlana Muraveckaja-Odincova)
- */
-require_once __DIR__ . '/includes/init.php';
-requireCustomer();
+    /**
+     * My Orders — customer order history
+     * @author Lana (Svetlana Muraveckaja-Odincova)
+     */
+    require_once __DIR__ . '/includes/init.php';
+    requireCustomer();
 
-// Load orders with delivery status
-$stmt = $conn->prepare("
-    SELECT
-        o.id,
-        o.status,
-        o.total,
-        o.totalItems,
-        o.created_at,
-        dm.title AS delivery_method,
-        d.status AS delivery_status
-    FROM orders o
-    LEFT JOIN delivery d ON d.id = o.deliveryID
-    LEFT JOIN delivery_method dm ON dm.id = d.methodID
-    WHERE o.userID = ?
-    ORDER BY o.created_at DESC
-");
-$stmt->bind_param("i", $_SESSION['customer_id']);
-$stmt->execute();
-$orders = $stmt->get_result();
+    // Load orders with delivery status
+    $stmt = $conn->prepare("
+        SELECT
+            o.id,
+            o.status,
+            o.total,
+            o.totalItems,
+            o.created_at,
+            dm.title AS delivery_method,
+            d.status AS delivery_status
+        FROM orders o
+        LEFT JOIN delivery d ON d.id = o.deliveryID
+        LEFT JOIN delivery_method dm ON dm.id = d.methodID
+        WHERE o.userID = ?
+        ORDER BY o.created_at DESC
+    ");
+    $stmt->bind_param("i", $_SESSION['customer_id']);
+    $stmt->execute();
+    $orders = $stmt->get_result();
 
-include('./includes/header.php');
+    include('./includes/header.php');
 ?>
 
 <section class="py-5">
@@ -60,44 +60,18 @@ include('./includes/header.php');
                     </thead>
                     <tbody>
                         <?php while ($order = $orders->fetch_assoc()): ?>
-                            <?php
-                            $order_number = 'FU-' . str_pad($order['id'], 5, '0', STR_PAD_LEFT);
-
-                            // Order status badge
-                            $status_class = match($order['status']) {
-                                'pending'   => 'bg-warning text-dark',
-                                'shipped'   => 'bg-info text-dark',
-                                'completed' => 'bg-success',
-                                default     => 'bg-secondary'
-                            };
-
-                            // Delivery status badge
-                            $del_class = match($order['delivery_status']) {
-                                'shipped'   => 'bg-info text-dark',
-                                'delivered' => 'bg-success',
-                                'failed'    => 'bg-danger',
-                                default     => 'bg-secondary'
-                            };
-                            ?>
                             <tr>
-                                <td><strong><?= $order_number ?></strong></td>
+                                <td><strong><?= orderNumber($order['id']) ?></strong></td>
                                 <td><?= date('d M Y', strtotime($order['created_at'])) ?></td>
                                 <td><?= $order['totalItems'] ?></td>
                                 <td>£<?= number_format($order['total'], 2) ?></td>
                                 <td>
                                     <?= htmlspecialchars($order['delivery_method'] ?? '—') ?>
                                     <?php if ($order['delivery_status']): ?>
-                                        <br>
-                                        <span class="badge <?= $del_class ?>">
-                                            <?= ucfirst($order['delivery_status']) ?>
-                                        </span>
+                                        <br><?= deliveryStatusBadge($order['delivery_status']) ?>
                                     <?php endif; ?>
                                 </td>
-                                <td>
-                                    <span class="badge <?= $status_class ?>">
-                                        <?= ucfirst($order['status']) ?>
-                                    </span>
-                                </td>
+                                <td><?= orderStatusBadge($order['status']) ?></td>
                                 <td>
                                     <a href="myOrder.php?id=<?= $order['id'] ?>" class="btn btn-primary">
                                         <i class="fa-regular fa-eye"></i> View

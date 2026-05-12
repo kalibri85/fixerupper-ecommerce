@@ -152,9 +152,7 @@
                 </div>
 
                 <div class="col-md-1 text-center">
-                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                        <i class="fa-solid fa-star fa-xs <?= $i <= $row['rating'] ? 'star-filled' : 'star-empty' ?>"></i>
-                    <?php endfor; ?>
+                    <?= renderStars((float)$row['rating'], 'fa-xs') ?>
                 </div>
 
                 <div class="col-md-3">

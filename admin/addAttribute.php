@@ -10,6 +10,7 @@
     include('./includes/header.php');
 
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['name'])) {
+        checkCSRF();
         $name = trim($_POST["name"]);
         $categories = $_POST['categories'] ?? [];
         if(!empty($name)) {
@@ -43,6 +44,7 @@
 <section id="tableBody"> 
     <div class="container pb-3 pt-3">    
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
             <div class="mb-3">
                 <label>Name</label>
                 <input type="text" name="name" class="form-control" required>
