@@ -1,21 +1,29 @@
 body {
-  font-family: 'Montserrat', sans-serif; /* Main site text */
+  font-family: 'Roboto', sans-serif; /* Main site text */
   margin: 0;
   padding: 0;
-  background: #fff;
+  background: #F5FBFF;
   color: #333;
 }
 h1{
-  font-family: 'MonteCarlo', cursive;
-  color: #FFD6F3;
-  font-size: 107px;
+  font-family: 'Montserrat', sans-serif;
+  color: #191b32;
+  font-size: 28px;
 }
-#tableHeader{
-  margin-top: 125px; 
-  background: #F6F7F7; 
-  border-bottom: 2px solid #191b32;
+#titleSection{
+  margin-top: 100px; 
 }
-#addProductForm, #loginForm, #addCategoryForm{
+
+#tableHeader > .container {
+  background-color: #eee;
+  font-weight: bold;
+  padding: 10px 0;
+}
+
+#tableBody > .container, #formBody > .container {
+  background-color: #ffffff;
+}
+#addProductForm, #loginForm {
   margin-top: 100px;
 }
 .navbar{
@@ -23,13 +31,37 @@ h1{
 }
 .navbar-brand{
   font-family: "Exo 2", sans-serif;
+  font-size: 32px;
 }
-.navbar-brand span{
+.navbar-brand span {
   color: #1d70b8;
 }
 .item-row {
+  position: relative;
+}
+
+.item-row::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
   border-bottom: 1px solid #B7B7B7;
 }
 .product-img{
   width: 80px;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.hidden {
+  display: none;
+}
+
+.login-page {
+    min-height: calc(100vh - var(--navbar-height, 70px));
+    padding: 2rem 1rem;
 }

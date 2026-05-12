@@ -12,7 +12,7 @@
   <!-- Google Fonts: Exo2 and Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <!-- Main CSS -->
-    <link rel="stylesheet" href="./css/style8.css">
+    <link rel="stylesheet" href="./css/style.css">
     <!-- Bootstrap 5 JS (Bundle with Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
