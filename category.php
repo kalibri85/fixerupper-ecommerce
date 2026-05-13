@@ -260,7 +260,7 @@
                     <?php endwhile; ?>
                 </div>
 
-                <button class="btn btn-primary w-100">Apply filters</button>
+                <button class="btn btn-primary-custom w-100">Apply filters</button>
 
             </form>
         </div>

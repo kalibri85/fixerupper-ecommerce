@@ -14,7 +14,7 @@
         checkCSRF();
 
         $new_status = $_POST['status'] ?? '';
-        $allowed    = ['pending', 'shipped', 'completed'];
+        $allowed    = ['pending', 'shipped', 'completed', 'cancelled'];
 
         if (in_array($new_status, $allowed)) {
             $now = date('Y-m-d H:i:s');
@@ -166,6 +166,7 @@
                             <option value="pending"   <?= $order['status'] === 'pending'   ? 'selected' : '' ?>>Pending</option>
                             <option value="shipped"   <?= $order['status'] === 'shipped'   ? 'selected' : '' ?>>Shipped</option>
                             <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+                            <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                         </select>
                         <button type="submit" name="update_status" class="btn btn-primary">
                             Update

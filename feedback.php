@@ -65,7 +65,7 @@
             p.id,
             p.name,
             p.image,
-            o.id AS orderID,
+            o.id AS orderID
         FROM order_items oi
         JOIN orders o   ON o.id  = oi.orderID
         JOIN products p ON p.id  = oi.productID

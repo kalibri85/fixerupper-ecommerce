@@ -11,7 +11,7 @@
     $status_filter = $_GET['status'] ?? '';
     $sort          = $_GET['sort']   ?? 'newest';
 
-    $allowed_statuses = ['pending', 'shipped', 'completed'];
+    $allowed_statuses = ['pending', 'shipped', 'completed', 'cancelled'];
     $allowed_sorts    = ['newest', 'oldest', 'total_asc', 'total_desc'];
 
     if (!in_array($status_filter, $allowed_statuses)) $status_filter = '';
@@ -73,6 +73,7 @@
                     <option value="">All Statuses</option>
                     <option value="pending"   <?= $status_filter === 'pending'   ? 'selected' : '' ?>>Pending</option>
                     <option value="shipped"   <?= $status_filter === 'shipped'   ? 'selected' : '' ?>>Shipped</option>
+                    <option value="completed" <?= $status_filter === 'completed' ? 'selected' : '' ?>>Completed</option>
                     <option value="completed" <?= $status_filter === 'completed' ? 'selected' : '' ?>>Completed</option>
                 </select>
             </div>

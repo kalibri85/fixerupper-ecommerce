@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 require_once __DIR__ . '/includes/init.php';
 include('includes/header.php'); 
 ?>
@@ -15,35 +13,24 @@ include('includes/header.php');
 <!-- SHOP BY CATEGORY -->
 <section class="py-5">
   <div class="container">
-
     <h2 class="section-title text-center mb-4">Shop by Category</h2>
-
     <div class="row g-4">
-
       <?php
-      $cats = $conn->query("SELECT * FROM categories WHERE parent = 0 LIMIT 4");
+      $cats = $conn->query("SELECT * FROM categories WHERE parent = 0 AND active = 1  LIMIT 4");
 
       while ($cat = $cats->fetch_assoc()):
       ?>
-
       <div class="col-md-4 col-6">
-
         <a href="category.php?id=<?= $cat['id'] ?>" class="category-card">
-
           <div class="category-box">
-
             <img src="img/categories/<?= $cat['id'].'.jpg' ?? 'placeholder.jpg' ?>" alt="">
 
             <div class="category-overlay">
               <h5><?= htmlspecialchars($cat['category']) ?></h5>
             </div>
-
           </div>
-
         </a>
-
       </div>
-
       <?php endwhile; ?>
 
     </div>
@@ -54,13 +41,10 @@ include('includes/header.php');
 <!-- FEATURED PRODUCTS -->
 <section class="py-5 bg-light">
   <div class="container">
-
     <h2 class="section-title text-center mb-4">Featured Products</h2>
-
     <div class="row g-4">
-
       <?php
-      $sql = "SELECT products.*, brands.name AS brand_name FROM products LEFT JOIN brands ON products.brandID = brands.id ORDER BY id DESC LIMIT 8";
+      $sql = "SELECT products.*, brands.name AS brand_name FROM products LEFT JOIN brands ON products.brandID = brands.id WHERE status = 1 ORDER BY id DESC LIMIT 8";
       $res = $conn->query($sql);
       while ($p = $res->fetch_assoc()):
       ?>
@@ -90,7 +74,6 @@ include('includes/header.php');
   </div>
 </section>
 
-
 <!-- WHY CHOOSE US -->
 <section class="py-5">
   <div class="container text-center">
@@ -119,39 +102,36 @@ include('includes/header.php');
   </div>
 </section>
 
-
 <!-- BRANDS -->
-<section class="py-4 bg-light">
-  <div class="container text-center">
-
-    <div class="row align-items-center">
-
-      <div class="col brand-item">
-        <img src="img/brands/bosch.jpg" class="brand-logo">
-      </div>
-
-      <div class="col brand-item">
-        <img src="img/brands/makita.jpg" class="brand-logo">
-      </div>
-
-      <div class="col brand-item">
-        <img src="img/brands/deWalt.jpg" class="brand-logo">
-      </div>
-
-      <div class="col brand-item">
-        <img src="img/brands/philips.jpg" class="brand-logo">
-      </div>
-
-      <div class="col brand-item">
-        <img src="img/brands/karcher.jpg" class="brand-logo">
-      </div>
-
-      <div class="col brand-item">
-        <img src="img/brands/samsung.jpg" class="brand-logo">
-      </div>
-
+<section class="py-4 brands-section">
+  <div class="brands-track-wrapper">
+    <div class="brands-track">
+ 
+      <!-- Original set -->
+      <div class="brand-item"><img src="img/brands/bosch.jpg"   class="brand-logo" alt="Bosch"></div>
+      <div class="brand-item"><img src="img/brands/makita.jpg"  class="brand-logo" alt="Makita"></div>
+      <div class="brand-item"><img src="img/brands/deWalt.jpg"  class="brand-logo" alt="DeWalt"></div>
+      <div class="brand-item"><img src="img/brands/philips.jpg" class="brand-logo" alt="Philips"></div>
+      <div class="brand-item"><img src="img/brands/karcher.jpg" class="brand-logo" alt="Karcher"></div>
+      <div class="brand-item"><img src="img/brands/samsung.jpg" class="brand-logo" alt="Samsung"></div>
+ 
+      <!-- Duplicate set for seamless loop -->
+      <div class="brand-item"><img src="img/brands/bosch.jpg"   class="brand-logo" alt="Bosch"></div>
+      <div class="brand-item"><img src="img/brands/makita.jpg"  class="brand-logo" alt="Makita"></div>
+      <div class="brand-item"><img src="img/brands/deWalt.jpg"  class="brand-logo" alt="DeWalt"></div>
+      <div class="brand-item"><img src="img/brands/philips.jpg" class="brand-logo" alt="Philips"></div>
+      <div class="brand-item"><img src="img/brands/karcher.jpg" class="brand-logo" alt="Karcher"></div>
+      <div class="brand-item"><img src="img/brands/samsung.jpg" class="brand-logo" alt="Samsung"></div>
+ 
+      <!-- Duplicate set for seamless loop -->
+      <div class="brand-item"><img src="img/brands/bosch.jpg"   class="brand-logo" alt="Bosch"></div>
+      <div class="brand-item"><img src="img/brands/makita.jpg"  class="brand-logo" alt="Makita"></div>
+      <div class="brand-item"><img src="img/brands/deWalt.jpg"  class="brand-logo" alt="DeWalt"></div>
+      <div class="brand-item"><img src="img/brands/philips.jpg" class="brand-logo" alt="Philips"></div>
+      <div class="brand-item"><img src="img/brands/karcher.jpg" class="brand-logo" alt="Karcher"></div>
+      <div class="brand-item"><img src="img/brands/samsung.jpg" class="brand-logo" alt="Samsung"></div>
+ 
     </div>
-
   </div>
 </section>
 <?php include('includes/footer.php'); ?>

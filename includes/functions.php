@@ -75,6 +75,7 @@
             'pending'   => 'bg-warning text-dark',
             'shipped'   => 'bg-info text-dark',
             'completed' => 'bg-success',
+            'cancelled' => 'bg-danger',
             default     => 'bg-secondary'
         };
         return "<span class=\"badge {$class}\">" . ucfirst($status) . "</span>";
