@@ -12,11 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
             form.method = 'POST';
             form.action = 'categories.php';
 
-            form.innerHTML = `
-                <input type="hidden" name="delete" value="1">
-                <input type="hidden" name="id" value="${btn.dataset.id}">
-                <input type="hidden" name="csrf_token" value="${csrfToken}">
-            `;
+            [['delete', '1'], ['id', btn.dataset.id], ['csrf_token', csrfToken]].forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            });
 
             document.body.appendChild(form);
             form.submit();

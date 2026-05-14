@@ -2,8 +2,6 @@
     require_once __DIR__ . '/includes/init.php';
     requireAdmin();
     include('./includes/header.php');
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
 
     $productID = (int)($_GET['id'] ?? 0);
     if (!$productID) die("No product ID");

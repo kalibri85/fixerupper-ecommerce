@@ -13,7 +13,6 @@ document.querySelectorAll('.add-to-cart-form').forEach(form => {
 
         if (data.success) {
             document.getElementById('cartCount').textContent = data.count;
-            button.innerHTML = 'Added ✓';
         }
     });
 });
