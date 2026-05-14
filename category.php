@@ -141,10 +141,10 @@
         <select id="sortSelect" class="form-select form-select-sm w-auto d-inline-block">
             <option value="">Sort by</option>
             <option value="price_asc" <?= ($_GET['sort'] ?? '') == 'price_asc' ? 'selected' : '' ?>>
-                Price: <i class="fa-solid fa-arrow-down-short-wide"></i>
+                Price: Low → High
             </option>
             <option value="price_desc" <?= ($_GET['sort'] ?? '') == 'price_desc' ? 'selected' : '' ?>>
-                Price: <i class="fa-solid fa-arrow-down-wide-short"></i>
+                Price: High → Low
             </option>
         </select>
       </div>
