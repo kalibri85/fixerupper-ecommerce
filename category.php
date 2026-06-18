@@ -269,42 +269,48 @@
       <!-- PRODUCTS -->
       <div class="col-md-9">
         <div class="row g-4 text-center">
-          <?php while ($p = $products->fetch_assoc()): ?>
+            <?php while ($p = $products->fetch_assoc()): ?>
             <div class="col-md-4 col-6">
               <a href="product.php?id=<?= $p['id'] ?>">
                 <div class="product-card p-2">
 
-                  <img src="img/products/<?= $p['image'] ?>" class="img-fluid">
+                    <img src="img/products/<?= $p['image'] ?>" class="img-fluid">
 
-                  <div class="p-2">
-                    <div class="rating d-flex justify-content-end gap-1">
-                        <?= renderStars((float)($p['avg_rating'] ?? 0), 'fa-xs') ?>
-                    </div>
-
-                    <?php if (!empty($p['brand_name'])): ?>
-                      <div class="product-brand pt-3">
-                        <?= htmlspecialchars($p['brand_name']) ?>
-                      </div>
-                    <?php endif; ?>
-
-                    <h6><?= htmlspecialchars($p['name']) ?></h6>
-
-                    <div class="price text-center">£<?= number_format($p['price'], 2) ?></div>
-                        <div class="text-center">
-                             <form method="POST" action="addToCart.php" class="add-to-cart-form">
-                                <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
-                                <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
-                                <input type="hidden" name="qty" value="1">
-                                    <?php if ($p['qty'] > 0): ?>
-                                        <button type="submit" class="btn-primary-custom mt-2">
-                                            <i class="fa-solid fa-cart-shopping"></i> Add to cart
-                                        </button>
-                                    <?php else: ?>
-                                        <div class="text-danger mb-2 pt-3">Out of stock</div>
-                                    <?php endif; ?>
-                            </form>
+                    <div class="p-2">
+                        <div class="rating d-flex justify-content-end gap-1">
+                            <?= renderStars((float)($p['avg_rating'] ?? 0), 'fa-xs') ?>
                         </div>
-                  </div>
+
+                        <?php if (!empty($p['brand_name'])): ?>
+                        <div class="product-brand pt-3">
+                            <?= htmlspecialchars($p['brand_name']) ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <h6><?= htmlspecialchars($p['name']) ?></h6>
+
+                        <div class="price text-center">£<?= number_format($p['price'], 2) ?></div>
+                        <div class="text-center">
+                            <div class="text-center d-flex justify-content-center align-items-center gap-2">
+                                <!-- Read More -->
+                                <a href="product.php?id=<?= $p['id'] ?>" class="btn-primary-custom">
+                                    <i class="fa-solid fa-circle-info"></i> More Details
+                                </a>
+                                <form method="POST" action="addToCart.php" class="m-0 d-inline add-to-cart-form">
+                                    <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
+                                    <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+                                    <input type="hidden" name="qty" value="1">
+                                        <?php if ($p['qty'] > 0): ?>
+                                            <button type="submit" class="btn-cta">
+                                                <i class="fa-solid fa-cart-shopping"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <div class="text-danger mb-2 pt-3">Out of stock</div>
+                                        <?php endif; ?>
+                                </form>
+                            </div>
+                        </div>    
+                    </div>
                 </div>
               </a>
             </div>

@@ -63,7 +63,7 @@ include('includes/header.php');
                 </div>
                 <h6><?= htmlspecialchars($p['name']) ?></h6>
                 <div class="price">£<?= $p['price'] ?></div>
-                <button class="btn-buy mt-2"><i class="fa-solid fa-cart-shopping pr-2"></i>  Add to cart</button>
+                <button class="btn-buy mt-2"><i class="fa-solid fa-circle-info"></i>  More Details</button>
               </div>
             </div>
           </a>
