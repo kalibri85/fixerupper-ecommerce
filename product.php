@@ -3,6 +3,7 @@
     *
     * @author Lana (Svetlana Muraveckaja-Odincova)
     */
+   ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
     require_once __DIR__ . '/includes/init.php';
     include('./includes/header.php');
 
@@ -25,29 +26,42 @@
     }
 
     // CATEGORY (Breadcrumbs)
-    $cat = $conn->query("
+    $sql = $conn->prepare("
         SELECT c.*, parent.category AS parent_name, parent.id AS parent_id
         FROM categories c
         LEFT JOIN categories parent ON c.parent = parent.id
-        WHERE c.id = {$product['categoryID']}
-    ")->fetch_assoc();
+        WHERE c.id = ?
+    ");
+    $sql->bind_param("i", $product['categoryID']);
+    $sql->execute();
+    $cat = $sql->get_result()->fetch_assoc();
+    //$sql->close();
 
     // ATTRIBUTES
-    $attributes = $conn->query("
+    $sql = $conn->prepare("
         SELECT a.name, av.value
         FROM attributes_product ap
         JOIN attributes a ON ap.attributeID = a.id
         JOIN attribute_values av ON ap.valueID = av.id
-        WHERE ap.productID = {$product['id']}
+        WHERE ap.productID = ?
     ");
+    $sql->bind_param("i", $product['id']);
+    $sql->execute();
+    $attributes = $sql->get_result();
+    $sql->close();
+
     // Variations
-    $variations = $conn->query("
+    $sql = $conn->prepare("
         SELECT pv.*, a.name AS attr_name, av.value AS attr_value
         FROM product_variation pv
         JOIN attributes a ON pv.attributeID = a.id
         JOIN attribute_values av ON pv.valueID = av.id
-        WHERE pv.productID = {$product['id']}
+        WHERE pv.productID = ?
     ");
+    $sql->bind_param("i", $product['id']);
+    $sql->execute();
+    $variations = $sql->get_result();
+    $sql->close();
 
     $variation_map = [];
 
