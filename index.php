@@ -7,7 +7,7 @@ include('includes/header.php');
   <div class="hero-content">
     <h1>Tools & Appliances for Every Home</h1>
     <p>Everything you need - from power tools to home appliances</p>
-    <a href="shop.php" class="btn hero-btn">Shop Now</a>
+    <a href="category.php" class="btn hero-btn">Shop Now</a>
   </div>
 </section>
 <!-- SHOP BY CATEGORY -->

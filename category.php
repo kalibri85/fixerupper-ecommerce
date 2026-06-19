@@ -3,6 +3,7 @@
     *
     * @author Lana (Svetlana Muraveckaja-Odincova)
     */
+    ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
     require_once __DIR__ . '/includes/init.php';
     include('./includes/header.php');
 
@@ -22,15 +23,25 @@
         }
     }
 
-    // Get category
-    $stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
-    $stmt->bind_param("i", $category_id);
-    $stmt->execute();
-    $category = $stmt->get_result()->fetch_assoc();
+    // "All Products" mode — no category selected
+    $all_products_mode = ($category_id === 0);
 
-    if (!$category) {
-        echo "Category not found";
-        exit;
+    if (!$all_products_mode) {
+        $stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
+        $stmt->bind_param("i", $category_id);
+        $stmt->execute();
+        $category = $stmt->get_result()->fetch_assoc();
+
+        if (!$category) {
+            echo "Category not found";
+            exit;
+        }
+    } else {
+        $category = [
+            'id'       => 0,
+            'category' => 'All Products',
+            'parent'   => null,
+        ];
     }
 
     // Get all subcategories
@@ -50,9 +61,13 @@
 
         return $ids;
     }
-    $cat_ids = getAllCategoryIds($conn, $category_id);
-    $cat_ids_str = implode(',', array_map('intval', $cat_ids));
-    
+    if ($all_products_mode) {
+        $cat_ids_str = null; // will skip WHERE category filter
+    } else {
+        $cat_ids = getAllCategoryIds($conn, $category_id);
+        $cat_ids_str = implode(',', array_map('intval', $cat_ids));
+    }
+        
 
     // Filters
     $brands = $_GET['brand'] ?? [];
@@ -61,7 +76,11 @@
     $attrs = $_GET['attr'] ?? [];
 
     // Build where
-    $where = "WHERE p.categoryID IN ($cat_ids_str) AND p.status = 1";
+    if ($all_products_mode) {
+        $where = "WHERE p.status = 1";
+    } else {
+        $where = "WHERE p.categoryID IN ($cat_ids_str) AND p.status = 1";
+    }
 
     // Brand filter
     if (!empty($brands)) {
@@ -162,6 +181,7 @@
       <div class="col-md-3">
         <div class="p-3 border rounded bg-light">
             <h5>Filters</h5>
+            <?php $cat_filter = $all_products_mode ? "1=1" : "p.categoryID IN ($cat_ids_str)"; ?>
             <form method="GET" action="category.php">
                 <input type="hidden" name="id" value="<?= (int)$category_id ?>">
 
@@ -189,7 +209,7 @@
                         SELECT DISTINCT b.id, b.name
                         FROM brands b
                         JOIN products p ON p.brandID = b.id
-                        WHERE p.categoryID IN ($cat_ids_str)
+                        WHERE $cat_filter
                         AND p.status = 1
                         ORDER BY b.name
                     ");
@@ -221,7 +241,7 @@
                         JOIN attributes_category ac ON ac.attributeID = a.id
                         JOIN attributes_product ap ON ap.attributeID = a.id
                         JOIN products p ON p.id = ap.productID
-                        WHERE p.categoryID IN ($cat_ids_str)
+                        WHERE $cat_filter
                         AND p.status = 1
                     ");
 
@@ -237,7 +257,7 @@
                                 JOIN attributes_product ap ON ap.valueID = av.id
                                 JOIN products p ON p.id = ap.productID
                                 WHERE ap.attributeID = {$a['id']}
-                                AND p.categoryID IN ($cat_ids_str)
+                                AND $cat_filter
                                 AND p.status = 1
                             ");
 

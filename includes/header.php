@@ -92,7 +92,6 @@
               <div class="dropdown-menu w-100 mega-menu">
                 <div class="container">
                   <div class="row">
-
                     <?php
                     $cats = $conn->query("SELECT * FROM categories WHERE parent = 0");
                     while ($cat = $cats->fetch_assoc()):
@@ -113,7 +112,6 @@
                             <?= htmlspecialchars($sub['category']) ?>
                           </a>
                         <?php endwhile; ?>
-
                       </div>
                     <?php endwhile; ?>
 
