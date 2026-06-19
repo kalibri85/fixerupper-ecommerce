@@ -4,20 +4,46 @@ include('./includes/header.php');
 
 $cart = $_SESSION['cart'] ?? [];
 
-$products = [];
+$cart_items = [];
 $total = 0;
 
 if (!empty($cart)) {
     $ids = implode(',', array_map('intval', array_keys($cart)));
 
-    $result = $conn->query("
-        SELECT id, name, price, image, qty
+    $stmt = $conn->prepare("
+        SELECT id, name, image, qty
         FROM products
         WHERE id IN ($ids) AND status = 1
     ");
+    $stmt->execute();
+    $result = $stmt->get_result();
 
+    $products_data = [];
     while ($row = $result->fetch_assoc()) {
-        $products[] = $row;
+        $products_data[$row['id']] = $row;
+    }
+    $stmt->close();
+
+    // Flatten cart into list of items
+    foreach ($cart as $product_id => $variants) {
+        if (!isset($products_data[$product_id])) continue;
+        $product = $products_data[$product_id];
+
+        foreach ($variants as $variation_key => $item) {
+            $subtotal      = $item['price'] * $item['qty'];
+            $total        += $subtotal;
+            $cart_items[]  = [
+                'id'              => $product_id,
+                'variation_key'   => $variation_key,
+                'name'            => $product['name'],
+                'image'           => $product['image'],
+                'stock'           => $product['qty'],
+                'price'           => $item['price'],
+                'qty'             => $item['qty'],
+                'variation_label' => $item['variation_label'],
+                'subtotal'        => $subtotal,
+            ];
+        }
     }
 }
 ?>
@@ -32,7 +58,7 @@ if (!empty($cart)) {
 
         <h1 class="mb-4">Shopping Cart</h1>
 
-        <?php if (empty($products)): ?>
+        <?php if (empty($cart_items)): ?>
             <div class="alert alert-light border">
                 Your cart is empty.
             </div>
@@ -43,18 +69,12 @@ if (!empty($cart)) {
             <!-- LEFT -->
             <div class="col-lg-8">
 
-                <?php foreach ($products as $product): ?>
-                    <?php
-                        $qty = $cart[$product['id']];
-                        $subtotal = $product['price'] * $qty;
-                        $total += $subtotal;
-                    ?>
-
+                <?php foreach ($cart_items as $product): ?>
                     <div class="card mb-3 p-3">
                         <div class="row align-items-center">
 
                             <div class="col-md-2">
-                                <img src="img/products/<?= $product['image'] ?>"
+                                <img src="img/products/<?= htmlspecialchars($product['image']) ?>"
                                      class="img-fluid rounded">
                             </div>
 
@@ -62,6 +82,11 @@ if (!empty($cart)) {
                                 <h6 class="mb-1">
                                     <?= htmlspecialchars($product['name']) ?>
                                 </h6>
+                                 <?php if (!empty($product['variation_label'])): ?>
+                                    <div class="text-muted small">
+                                        <?= htmlspecialchars($product['variation_label']) ?>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="text-muted">
                                     £<?= number_format($product['price'], 2) ?>
                                 </div>
@@ -71,12 +96,14 @@ if (!empty($cart)) {
                                 <form method="POST" action="updateCart.php" class="d-flex">
                                     <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
                                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                    <input type="hidden" name="variation_key" value="<?= htmlspecialchars($product['variation_key']) ?>">
+
 
                                     <input type="number"
                                            name="qty"
-                                           value="<?= $qty ?>"
+                                           value="<?= $product['qty'] ?>"
                                            min="1"
-                                           max="<?= $product['qty'] ?>"
+                                           max="<?= $product['stock'] ?>"
                                            class="form-control me-2">
 
                                     <button class="btn btn-outline-primary">
@@ -87,7 +114,7 @@ if (!empty($cart)) {
 
                             <div class="col-md-2 text-end">
                                 <strong>
-                                    £<?= number_format($subtotal, 2) ?>
+                                    £<?= number_format($product['subtotal'], 2) ?>
                                 </strong>
                             </div>
 
@@ -95,6 +122,7 @@ if (!empty($cart)) {
                                 <form method="POST" action="deleteCart.php" class="d-inline remove-form">
                                     <input type="hidden" name="csrf_token" value="<?= csrf() ?>">
                                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                    <input type="hidden" name="variation_key" value="<?= htmlspecialchars($product['variation_key']) ?>">
 
                                     <button type="submit" class="btn btn-link text-danger p-0 border-0">
                                         <i class="fa-solid fa-trash"></i>

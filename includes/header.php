@@ -22,7 +22,11 @@
     $cartCount = 0;
 
     if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-        $cartCount = array_sum($_SESSION['cart']);
+        foreach ($_SESSION['cart'] as $variants) {
+            foreach ($variants as $item) {
+                $cartCount += $item['qty'];
+            }
+        }
     }
   ?>
   <header>
