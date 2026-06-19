@@ -14,17 +14,31 @@
     // Cart products
     $ids      = implode(',', array_map('intval', array_keys($cart)));
     $result   = $conn->query("SELECT id, name, price, image FROM products WHERE id IN ($ids) AND status = 1");
-    $products = [];
+    $products_data = [];
+    while ($row = $result->fetch_assoc()) {
+        $products_data[$row['id']] = $row;
+    }
+
+    $products   = [];
     $totalItems = 0;
     $subtotal   = 0;
 
-    while ($row = $result->fetch_assoc()) {
-        $qty             = $cart[$row['id']];
-        $row['qty']      = $qty;
-        $row['subtotal'] = $row['price'] * $qty;
-        $totalItems     += $qty;
-        $subtotal       += $row['subtotal'];
-        $products[]      = $row;
+    foreach ($cart as $product_id => $variants) {
+    if (!isset($products_data[$product_id])) continue;
+    $base = $products_data[$product_id];
+
+        foreach ($variants as $variation_key => $item) {
+            $row = $base;
+            $row['variation_key']   = $variation_key;
+            $row['variation_label'] = $item['variation_label'];
+            $row['price']           = $item['price'];
+            $row['qty']             = $item['qty'];
+            $row['subtotal']        = $item['price'] * $item['qty'];
+
+            $totalItems += $item['qty'];
+            $subtotal   += $row['subtotal'];
+            $products[]  = $row;
+        }
     }
 
     // Delivery methods
@@ -196,7 +210,13 @@
 
                     <?php foreach ($products as $p): ?>
                         <div class="d-flex justify-content-between mb-2">
-                            <span><?= htmlspecialchars($p['name']) ?> × <?= $p['qty'] ?></span>
+                            <span>
+                                <?= htmlspecialchars($p['name']) ?>
+                                <?php if (!empty($p['variation_label'])): ?>
+                                    <br><small class="text-muted"><?= htmlspecialchars($p['variation_label']) ?></small>
+                                <?php endif; ?>
+                                × <?= $p['qty'] ?>
+                            </span>
                             <span>£<?= number_format($p['subtotal'], 2) ?></span>
                         </div>
                     <?php endforeach; ?>

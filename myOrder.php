@@ -3,6 +3,7 @@
      * My Order — single order details
      * @author Lana (Svetlana Muraveckaja-Odincova)
      */
+    ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
     require_once __DIR__ . '/includes/init.php';
     requireCustomer();
 
@@ -45,13 +46,14 @@
     $stmt->execute();
     $order = $stmt->get_result()->fetch_assoc();
 
-    if (!$order) redirect('my_orders.php');
+    if (!$order) redirect('myOrders.php');
 
     // Load order items
     $items_stmt = $conn->prepare("
         SELECT
             oi.quantity,
             oi.price,
+            oi.variation_label,
             p.name,
             p.image
         FROM order_items oi
@@ -73,7 +75,7 @@
 
         <nav class="breadcrumbs mb-4">
             <a href="index.php">Home</a> /
-            <a href="my_orders.php">My Orders</a> /
+            <a href="myOrders.php">My Orders</a> /
             <span><?= $order_number ?></span>
         </nav>
 
@@ -120,6 +122,9 @@
                             <?php endif; ?>
                             <div class="flex-grow-1">
                                 <div><?= htmlspecialchars($item['name']) ?></div>
+                                <?php if (!empty($item['variation_label'])): ?>
+                                    <small class="text-muted d-block"><?= htmlspecialchars($item['variation_label']) ?></small>
+                                <?php endif; ?>
                                 <small class="text-muted">× <?= $item['quantity'] ?></small>
                             </div>
                             <div>£<?= number_format($item['price'] * $item['quantity'], 2) ?></div>
