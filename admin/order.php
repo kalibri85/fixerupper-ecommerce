@@ -109,7 +109,7 @@
 
     // Load order items 
     $items_stmt = $conn->prepare("
-        SELECT oi.quantity, oi.price, p.name, p.image, p.sku
+        SELECT oi.quantity, oi.price, oi.variation_label, p.name, p.image, p.sku
         FROM order_items oi
         JOIN products p ON p.id = oi.productID
         WHERE oi.orderID = ?
@@ -214,6 +214,9 @@
                             <?php endif; ?>
                             <div class="flex-grow-1">
                                 <div><?= htmlspecialchars($item['name']) ?></div>
+                                <?php if (!empty($item['variation_label'])): ?>
+                                    <small class="text-muted d-block"><?= htmlspecialchars($item['variation_label']) ?></small>
+                                <?php endif; ?>
                                 <small class="text-muted">SKU: <?= htmlspecialchars($item['sku']) ?></small>
                             </div>
                             <div class="text-end">

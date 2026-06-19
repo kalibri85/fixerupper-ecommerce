@@ -74,7 +74,7 @@
                     <option value="pending"   <?= $status_filter === 'pending'   ? 'selected' : '' ?>>Pending</option>
                     <option value="shipped"   <?= $status_filter === 'shipped'   ? 'selected' : '' ?>>Shipped</option>
                     <option value="completed" <?= $status_filter === 'completed' ? 'selected' : '' ?>>Completed</option>
-                    <option value="completed" <?= $status_filter === 'completed' ? 'selected' : '' ?>>Completed</option>
+                    <option value="cancelled" <?= $status_filter === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                 </select>
             </div>
             <div class="col-md-3">
