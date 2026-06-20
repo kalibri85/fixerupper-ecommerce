@@ -31,7 +31,11 @@
 
     // Load selected attributes
     $selectedAttributes = [];
-    $res = $conn->query("SELECT attributeID, valueID FROM attributes_product WHERE productID = $productID");
+    $stmt = $conn->prepare("SELECT attributeID, valueID FROM attributes_product WHERE productID = ?");
+    $stmt->bind_param("i", $productID);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $stmt->close();
 
     while ($r = $res->fetch_assoc()) {
         $selectedAttributes[$r['attributeID']][] = $r['valueID'];
@@ -46,7 +50,11 @@
         }
 
         if (!$found) {
-            $res = $conn->query("SELECT id, name FROM attributes WHERE id = $attrID");
+            $stmt2 = $conn->prepare("SELECT id, name FROM attributes WHERE id = ?");
+            $stmt2->bind_param("i", $attrID);
+            $stmt2->execute();
+            $res = $stmt2->get_result();
+            $stmt2->close();
             if ($row = $res->fetch_assoc()) {
                 $attributes[] = $row;
             }
@@ -54,7 +62,11 @@
     }
     // Load variations
     $variation = [];
-    $res = $conn->query("SELECT * FROM product_variation WHERE productID = $productID");
+    $stmt3 = $conn->prepare("SELECT * FROM product_variation WHERE productID = ?");
+    $stmt3->bind_param("i", $productID);
+    $stmt3->execute();
+    $res = $stmt3->get_result();
+    $stmt3->close();
     $variation = $res->fetch_all(MYSQLI_ASSOC);
 
     // Update product
@@ -132,7 +144,11 @@
             if (!empty($_POST['variation_attr']) && !empty($_POST['variation_values'])) {
 
                 $attrID = (int)$_POST['variation_attr'];
-                $check = $conn->query("SELECT id FROM attributes WHERE id = $attrID");
+                $check_stmt = $conn->prepare("SELECT id FROM attributes WHERE id = ?");
+                $check_stmt->bind_param("i", $attrID);
+                $check_stmt->execute();
+                $check = $check_stmt->get_result();
+                $check_stmt->close();
 
                 if($check && $check->num_rows > 0){
                     foreach ($_POST['variation_values'] as $i => $valueID) {
@@ -320,7 +336,11 @@
 
                         <div id="variationValues">
                             <?php foreach ($variation as $v): 
-                                $valRes = $conn->query("SELECT value FROM attribute_values WHERE id = {$v['valueID']}");
+                                $val_stmt = $conn->prepare("SELECT value FROM attribute_values WHERE id = ?");
+                                $val_stmt->bind_param("i", $v['valueID']);
+                                $val_stmt->execute();
+                                $valRes = $val_stmt->get_result();
+                                $val_stmt->close();
                                 $valName = $valRes->fetch_assoc()['value'] ?? '';
                             ?>
                                 <div class="border p-2 mb-2">

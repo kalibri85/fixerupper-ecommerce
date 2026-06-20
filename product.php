@@ -256,7 +256,7 @@
 
         <div class="tab-pane fade show active" id="desc">
             <div class="product-description">
-                <?= $product['description'] ?>
+                <?= htmlspecialchars($product['description']) ?>
             </div>
         </div>
 

@@ -26,7 +26,11 @@ function uploadImage(array $file, string $uploadDir): ?string {
     if (!is_writable($uploadDir)) {
         throw new Exception("Upload folder is not writable");
     }
- 
+    // File size limit 5MB
+    $maxSize = 5 * 1024 * 1024;
+    if ($file['size'] > $maxSize) {
+        throw new Exception("File is too large. Maximum size is 5MB");
+    }
     $tmp = $file['tmp_name'];
  
     // 1. Extension
