@@ -150,7 +150,7 @@
                       : "../img/products/default/no-image.png";
                   ?>
               <img src='<?= $image ?>' alt='item' width ='40px'></div>
-              <div class='float-start col-md-2'><?= $row['name'] ?></div>
+              <div class='float-start col-md-2'><?= htmlspecialchars($row['name']) ?></div>
               <div class='float-start col-md-2'><?= htmlspecialchars($row['category_name'] ?? 'No category') ?></div>
               <div class='float-start col-md-2'><?= htmlspecialchars(mb_substr(strip_tags($row['description']), 0, 50)) ?>...</div>
               <div class='float-start col-md-1 text-center'>£<?= $row['price'] ?></div>
