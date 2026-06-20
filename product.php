@@ -23,6 +23,62 @@
         echo "Product not found";
         exit;
     }
+    // Sanitise rich-text description from TinyMCE.
+    // Parses HTML as a DOM tree (not a string) and removes anything
+    // not on the whitelist — safer than regex against XSS payloads.
+    function safeDescription(string $html): string {
+        $allowed_tags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'h3', 'h4', 'h1', 'h2', 'div', 'a'];
+
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true); // suppress warnings on malformed HTML
+        $dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_NOERROR);
+        libxml_clear_errors();
+
+        $xpath = new DOMXPath($dom);
+
+        // Walk every element in reverse so removing nodes doesn't break iteration
+        $nodes = $xpath->query('//*');
+        for ($i = $nodes->length - 1; $i >= 0; $i--) {
+            $node = $nodes->item($i);
+
+            if (!in_array($node->nodeName, $allowed_tags)) {
+                // Disallowed tag (e.g. <script>) — drop it, but keep its text content
+                $fragment = $dom->createDocumentFragment();
+                while ($node->firstChild) {
+                    $fragment->appendChild($node->firstChild);
+                }
+                $node->parentNode->replaceChild($fragment, $node);
+            } else {
+                // Allowed tag — strip every attribute except href on <a>
+                if ($node->hasAttributes()) {
+                    $attrs = iterator_to_array($node->attributes);
+                    foreach ($attrs as $attr) {
+                        if (!($node->nodeName === 'a' && $attr->name === 'href')) {
+                            $node->removeAttribute($attr->name);
+                        }
+                    }
+                }
+
+                // Block javascript: / data: URLs hidden inside href
+                if ($node->nodeName === 'a' && $node->hasAttribute('href')) {
+                    $href = $node->getAttribute('href');
+                    if (preg_match('/^\s*(javascript|data):/i', $href)) {
+                        $node->setAttribute('href', '#');
+                    }
+                }
+            }
+        }
+
+        $wrapper = $dom->getElementsByTagName('div')->item(0);
+        $result  = '';
+        foreach ($wrapper->childNodes as $child) {
+            $result .= $dom->saveHTML($child);
+        }
+
+        return $result;
+    }
+
+    $safe_description = safeDescription($product['description'] ?? '');
 
     // CATEGORY (Breadcrumbs)
     $sql = $conn->prepare("
@@ -256,7 +312,7 @@
 
         <div class="tab-pane fade show active" id="desc">
             <div class="product-description">
-                <?= htmlspecialchars($product['description']) ?>
+                <?= $safe_description ?>
             </div>
         </div>
 

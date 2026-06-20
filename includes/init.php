@@ -24,6 +24,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// ================= SESSION TIMEOUT (idle 30 min) =================
+$idle_limit = 1800; // 30 minutes in seconds
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $idle_limit) {
+    // Session expired due to inactivity — destroy and start fresh
+    $_SESSION = [];
+    session_destroy();
+    session_start();
+}
+
+$_SESSION['last_activity'] = time();
+
 // ================= DATABASE =================
 require_once __DIR__ . '/connection.php';
 
