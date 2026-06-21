@@ -93,7 +93,7 @@
                 <div class="container">
                   <div class="row">
                     <?php
-                    $cats = $conn->query("SELECT * FROM categories WHERE parent = 0");
+                    $cats = $conn->query("SELECT * FROM categories WHERE parent = 0 AND active = 1");
                     while ($cat = $cats->fetch_assoc()):
                     ?>
                       <div class="col-md-3">
@@ -104,7 +104,7 @@
                         </h6>
 
                         <?php
-                        $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
+                        $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']." AND active = 1");
                         while ($sub = $subs->fetch_assoc()):
                         ?>
                           <a class="dropdown-item"
@@ -122,7 +122,7 @@
 
             <!-- TOP LEVEL -->
             <?php
-            $cats = $conn->query("SELECT * FROM categories WHERE parent = 0");
+            $cats = $conn->query("SELECT * FROM categories WHERE parent = 0 AND active = 1");
             while ($cat = $cats->fetch_assoc()):
             ?>
               <li class="nav-item dropdown position-static">
@@ -147,7 +147,7 @@
                         <div class="row">
 
                           <?php
-                          $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
+                          $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']." AND active = 1");
                           while ($sub = $subs->fetch_assoc()):
                           ?>
                             <div class="col-md-4">
@@ -158,7 +158,7 @@
                               </a>
 
                               <?php
-                              $subsubs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$sub['id']);
+                              $subsubs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$sub['id']." AND active = 1");
                               while ($ss = $subsubs->fetch_assoc()):
                               ?>
                                 <a class="dropdown-item sub-item"
@@ -202,7 +202,7 @@
         <a href="index.php" class="mobile-link">Home</a>
 
         <?php
-        $cats = $conn->query("SELECT * FROM categories WHERE parent = 0");
+        $cats = $conn->query("SELECT * FROM categories WHERE parent = 0 AND active = 1");
         while ($cat = $cats->fetch_assoc()):
         ?>
           <div class="mobile-category">
@@ -221,7 +221,7 @@
               </a>
 
               <?php
-              $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']);
+              $subs = $conn->query("SELECT * FROM categories WHERE parent = ".(int)$cat['id']." AND active = 1");
               while ($sub = $subs->fetch_assoc()):
               ?>
                 <a href="category.php?id=<?= $sub['id'] ?>" class="mobile-sub">
