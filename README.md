@@ -140,7 +140,7 @@ Implemented protections include:
 
 ### Product Page
 
-![Product Page](screenshots/ptoductPage.jpg)
+![Product Page](screenshots/productPage.jpg)
 
 ### Shopping Cart
 
